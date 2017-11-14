@@ -161,8 +161,8 @@ def get_all_tokens(table, polarity):
 
     i = 0
     for index, row in table.iterrows():
-        tokens = tokens + preprocess_tweet(row['TWEET'])
-        # tokens = tokens + extract_tokens(row['TWEET'])
+        # tokens = tokens + preprocess_tweet(row['TWEET'])
+        tokens = tokens + extract_tokens(row['TWEET'])
         # test only
         i += 1
         if i > 5:
