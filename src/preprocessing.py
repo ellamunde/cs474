@@ -1,32 +1,41 @@
 import pandas as pd
-import os
 import nltk
 import re
 import io
+import os
+import wordnet
+import enchant
 
 from textblob import Word
 from textblob import TextBlob
 
 
+# import dictionary from enchant library
+en_dictionary = enchant.Dict("en_US")
+# import stopwords from nltk
+st_words = nltk.corpus.stopwords.words('english')
+
+# use tweet tokenizer from nltk
+tweet_tok = nltk.TweetTokenizer()
+
+
 """
-get_files():
-    Get all files in a directory
+get_data():
+    Read data from text file and put it in data frame
 """
 
 
-def get_files(directory):
-    abs_dir = os.path.abspath(directory)
-    arr_file = []
-    dirs = os.listdir(directory)
-
-    for d in dirs:
-        d = abs_dir + "/" + d
-        print(d)
-        arr_file.append(d)
-        # testing
-        # break
-
-    return arr_file
+def get_data(data="train", task="A"):
+    # directory for the text file
+    directory = os.getcwd() + "/../data/" + task + "/" + data + "_" + task + ".txt"
+    directory = os.path.abspath(directory)
+    # extract content of the file
+    text = extract_txt(directory)
+    # make data frame table
+    table = create_table(text)
+    # preprocess data and put it in new column
+    add_preprocess_column(table)
+    return table
 
 
 """
@@ -35,41 +44,61 @@ extract_txt():
 """
 
 
-def extract_txt(files):
-    raw = []
-    for f in files:
-        # raw = raw + open(path+'%s'%f, 'r').readlines()
-        raw = raw + io.open('%s' % f, 'r', encoding='utf-8').readlines()
+def extract_txt(filename):
+    raw = io.open('%s' % filename, 'r', encoding='utf-8').readlines()
     lines = [a.decode('utf-8').strip() for a in raw]
+    # print lines
     return lines
 
 
-def create_table(file_names):
-    # files may have duplicated data
-    txt = extract_txt(file_names)  # ['twitter-2013dev-A.txt','twitter-2013train-A.txt','twitter-2015train-A.txt'])
+"""
+create_table()
+    create data frame for tweets data
+"""
+
+
+def create_table(txt):
     table = pd.DataFrame()
-    ids = []
     tweets = []
     polarity = []
+    topics = []
 
-    for t in txt:
-        t = t.split('\t')
-        # tweet id
-        t_id = t[0]
-        # tweet polarity
-        t_pol = t[1]
+    for i in range(0, len(txt)):
+        # split line
+        t = txt[i].split('\t')
+        print t
+
         # tweet text
-        t_text = t[2]
-        ids.append(t_id)
-        tweets.append(t_text)
-        polarity.append(t_pol)
+        t_text = t[0]
+        t_polarity = None
 
-    table['ID'] = ids
+        # for task A
+        if len(t) > 2:
+            # tweet polarity
+            t_topic = t[1]
+            topics.append(t_topic)
+            # tweet polarity
+            t_polarity = t[2]
+        # for task B and C
+        else:
+            # tweet polarity
+            t_polarity = t[1]
+
+        # DEVELOPMENT ONLY
+        if i > 10:
+            break
+
+        tweets.append(t_text)
+        polarity.append(t_polarity)
+
     table['TWEET'] = tweets
     table['POLARITY'] = polarity
 
+    if len(topics) > 0:
+        table['TOPIC'] = topics
+
     # drop duplicates
-    table.drop_duplicates('ID', inplace=True)
+    table.drop_duplicates('TWEET', inplace=True)
     return table
 
 
@@ -122,19 +151,22 @@ def preprocess_tweet(txt):
             token = "%emoticon"
         # for words
         else:
-            word = Word(token)
-            print word.spellcheck()[0]
-            spelling_token = word.spellcheck()[0][0]
-            spelling_score = word.spellcheck()[0][1]
-
-            if spelling_token != token and spelling_score == 1.0:
-                if spelling_token.encode('utf-8') == token:
-                    print "it is the same!"
-                    continue
-
-                token = spelling_token
+            if not en_dictionary.check(token):
+                word = Word(token)
+                spelling_token = word.spellcheck()[0][0]
+                spelling_score = word.spellcheck()[0][1]
                 print "spelling score: " + "%3f" % spelling_score
-                print "spelling token: " + token
+                print "spelling token: " + spelling_token
+                print "token: " + token
+
+                if spelling_token != token and spelling_score == 1.0:
+                    if spelling_token.encode('utf-8') == token:
+                        print "it is the same!"
+                        continue
+
+                    token = spelling_token
+                    print "spelling score: " + "%3f" % spelling_score
+                    print "spelling token: " + token
 
         print token
         new_tokens.append(token.encode('utf-8'))
@@ -143,11 +175,12 @@ def preprocess_tweet(txt):
     return new_tokens
 
 
-def add_preprocess_tweet(table):
+def add_preprocess_column(table):
     preprocess = []
 
     for index, row in table.iterrows():
         txt = " ".join(preprocess_tweet(row['TWEET']))
+        print txt
         preprocess += txt
 
     table['PREPROCESSED'] = preprocess
@@ -159,14 +192,9 @@ def get_all_tokens(table, polarity):
     table = table.loc[table['POLARITY'] == polarity]
     tokens = []
 
-    i = 0
     for index, row in table.iterrows():
-        # tokens = tokens + preprocess_tweet(row['TWEET'])
         tokens = tokens + extract_tokens(row['TWEET'])
         # test only
-        i += 1
-        if i > 5:
-            break
 
     return tokens
 
@@ -174,11 +202,6 @@ def get_all_tokens(table, polarity):
 def extract_tokens(txt):
     txt = txt.lower()
 
-    # import stopwords from nltk
-    st_words = nltk.corpus.stopwords.words('english')
-
-    # use tweet tokenizer from nltk
-    tweet_tok = nltk.TweetTokenizer()
     tokens = tweet_tok.tokenize(txt)
     print tokens
 
