@@ -33,8 +33,6 @@ def get_data(data="train", task="A"):
     text = extract_txt(directory)
     # make data frame table
     table = create_table(text)
-    # preprocess data and put it in new column
-    add_preprocess_column(table)
     return table
 
 
@@ -62,14 +60,20 @@ def create_table(txt):
     tweets = []
     polarity = []
     topics = []
+    cleaned = []
 
     for i in range(0, len(txt)):
+        # DEVELOPMENT ONLY
+        if i > 10:
+            break
+
         # split line
         t = txt[i].split('\t')
         print t
 
         # tweet text
         t_text = t[0]
+        t_cleaned = " ".join(preprocess_tweet(t_text))
         t_polarity = None
 
         # for task A
@@ -84,21 +88,23 @@ def create_table(txt):
             # tweet polarity
             t_polarity = t[1]
 
-        # DEVELOPMENT ONLY
-        if i > 10:
-            break
-
         tweets.append(t_text)
         polarity.append(t_polarity)
+        cleaned.append(t_cleaned)
 
     table['TWEET'] = tweets
     table['POLARITY'] = polarity
+    table['CLEANED'] = cleaned
 
     if len(topics) > 0:
         table['TOPIC'] = topics
 
     # drop duplicates
     table.drop_duplicates('TWEET', inplace=True)
+    print len(txt)
+    # print len(cleaned)
+    # print len(tweets)
+    # print len(table)
     return table
 
 
@@ -107,10 +113,10 @@ def preprocess_tweet(txt):
 
     # normalize text
     txt = re.sub(r'\u2019', '\'', txt)
-    print txt
+    # print txt
     txt = txt.decode('unicode-escape')
     txt = txt.encode('utf-8')
-    print txt
+    # print txt
 
     txt = re.sub(r'n\'t', " not", txt)
     txt = re.sub(r'let\'s', "let us", txt)
@@ -120,14 +126,14 @@ def preprocess_tweet(txt):
     # remove multiple spaces
     txt = re.sub(r'[#\\"]', " ", txt)
     txt = re.sub(r'\s+', " ", txt)
-    print txt
+    # print txt
 
     tokenizer = nltk.TweetTokenizer()
     tokens = tokenizer.tokenize(txt)
 
     new_tokens = []
     for token, tag in nltk.pos_tag(tokens):
-        print tag + "-" + token
+        # print tag + "-" + token
 
         # for link, replace them with special token
         # https://someweblog.com/url-regular-expression-javascript-link-shortener/
@@ -155,36 +161,24 @@ def preprocess_tweet(txt):
                 word = Word(token)
                 spelling_token = word.spellcheck()[0][0]
                 spelling_score = word.spellcheck()[0][1]
-                print "spelling score: " + "%3f" % spelling_score
-                print "spelling token: " + spelling_token
-                print "token: " + token
+                # print "spelling score: " + "%3f" % spelling_score
+                # print "spelling token: " + spelling_token
+                # print "token: " + token
 
                 if spelling_token != token and spelling_score == 1.0:
                     if spelling_token.encode('utf-8') == token:
-                        print "it is the same!"
+                        # print "it is the same!"
                         continue
 
                     token = spelling_token
-                    print "spelling score: " + "%3f" % spelling_score
-                    print "spelling token: " + token
+                    # print "spelling score: " + "%3f" % spelling_score
+                    # print "spelling token: " + token
 
-        print token
+        # print token
         new_tokens.append(token.encode('utf-8'))
 
     print new_tokens
     return new_tokens
-
-
-def add_preprocess_column(table):
-    preprocess = []
-
-    for index, row in table.iterrows():
-        txt = " ".join(preprocess_tweet(row['TWEET']))
-        print txt
-        preprocess += txt
-
-    table['PREPROCESSED'] = preprocess
-    return table
 
 
 def get_all_tokens(table, polarity):
@@ -205,13 +199,28 @@ def extract_tokens(txt):
     tokens = tweet_tok.tokenize(txt)
     print tokens
 
+    tags = get_tags()
+    tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in tags]
+    # for token, tag in nltk.pos_tag(tokens):
+        # print tag + "-" + token
+
+    return tokens
+
+
+def detect_lang(txt):
     tblob = TextBlob(txt.decode('utf-8'))
-    print tblob.detect_language()
+    lang = tblob.detect_language()
+    print lang
+    return lang
 
+
+def remove_stopwords(tokenize_txt):
     # remove stop words
-    # tokens = [x for x in tokens if x not in st_words] # don't filter stopwords to extract negative words
+    tokens = [x for x in tokenize_txt if x not in st_words] # don't filter stopwords to extract negative words
+    return tokens
 
-    # attach pos tag extract only nouns, verbs, adjectives, adverbs
+
+def get_tags():
     tags = []
 
     # extend adjective pos tags
@@ -226,13 +235,4 @@ def extract_tokens(txt):
     # extend verb pos tags
     tags.extend(['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ'])
 
-    # print tags
-
-    # tags = ['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'NNP', 'NNPS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
-    # tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in tags]
-    # print tokens
-    for token, tag in nltk.pos_tag(tokens):
-        print tag + "-" + token
-
-    return tokens
-
+    return tags

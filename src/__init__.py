@@ -6,3 +6,4 @@ train = "train"
 test = "test"
 train_a = preprocessing.get_data(train, "A")
 print train_a
+print len(train_a)
