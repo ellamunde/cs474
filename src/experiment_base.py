@@ -79,9 +79,9 @@ final_neg = preprocessing.filter_tokens(ant_syn_neg,set(ant_syn_pos)|set(syn_neu
 final_neu = preprocessing.filter_tokens(syn_neu,set(ant_syn_neg)|set(ant_syn_pos))
 
 # tokens only
-final_tokens_pos = preprocessing.get_tokens_only(final_pos)
-final_tokens_neg = preprocessing.get_tokens_only(final_neg)
-final_tokens_neu = preprocessing.get_tokens_only(final_neu)
+final_tokens_pos = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_pos))
+final_tokens_neg = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_neg))
+final_tokens_neu = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_neu))
 
 print "pos: "
 print final_tokens_pos
