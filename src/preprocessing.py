@@ -69,7 +69,7 @@ def create_table(txt):
 
         # split line
         t = txt[i].split('\t')
-        print t
+        # print t
 
         # tweet text
         t_text = t[0]
@@ -101,7 +101,7 @@ def create_table(txt):
 
     # drop duplicates
     table.drop_duplicates('TWEET', inplace=True)
-    print len(txt)
+    # print len(txt)
     # print len(cleaned)
     # print len(tweets)
     # print len(table)
@@ -177,20 +177,30 @@ def preprocess_tweet(txt):
         # print token
         new_tokens.append(token.encode('utf-8'))
 
-    print new_tokens
+    # print new_tokens
     return new_tokens
 
 
-def get_all_tokens(table, polarity):
+def get_tokens(table, polarity=None, data='CLEANED'):
     # get subset table based on polarity type
-    table = table.loc[table['POLARITY'] == polarity]
+    subset = get_subset(table, polarity)
+    # print subset
     tokens = []
 
-    for index, row in table.iterrows():
-        tokens = tokens + extract_tokens(row['TWEET'])
-        # test only
+    for index, row in subset.iterrows():
+        tokens = tokens + extract_tokens(row[data])
 
     return tokens
+
+
+def get_subset(table, polarity=None):
+    subset = None
+    if polarity is not None:
+        subset = table.loc[table['POLARITY'] == polarity]
+    else:
+        return table
+
+    return subset
 
 
 def extract_tokens(txt):
@@ -201,8 +211,6 @@ def extract_tokens(txt):
 
     tags = get_tags()
     tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in tags]
-    # for token, tag in nltk.pos_tag(tokens):
-        # print tag + "-" + token
 
     return tokens
 
@@ -236,3 +244,18 @@ def get_tags():
     tags.extend(['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ'])
 
     return tags
+
+
+def get_tokens_only(tokens):
+    new_tokens = [token for token, tag in tokens]
+    return new_tokens
+
+"""
+filter tokens: leave only those that appear in one group..later use pmi or idf to filter
+"""
+
+
+def filter_tokens(tokens, tokens_to_remove):
+    uniq_tokens = set(tokens) - set(tokens_to_remove)
+    tokens = [t for t in tokens if t in uniq_tokens]
+    return tokens
