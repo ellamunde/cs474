@@ -1,9 +1,14 @@
+import re
+
 from nltk.corpus import wordnet as wn
 
 
 def add_synonyms(tokens):
     synonyms = []
     for token, tag in tokens:
+        if re.match(r'^@', token):
+            continue
+
         synonyms = synonyms + get_synonyms(token, tag)
 
     #append synonyms
@@ -14,6 +19,8 @@ def add_synonyms(tokens):
 def add_antonyms(tokens, antonym_tokens):
     antonyms = []
     for token, tag in tokens:
+        if re.match(r'^@', token):
+            continue
         antonyms = antonyms + get_antonyms(token, tag)
 
     #append antonyms
