@@ -3,8 +3,8 @@ import nltk
 import re
 import io
 import os
-import wordnet
 import enchant
+# import string
 
 from textblob import Word
 from textblob import TextBlob
@@ -28,6 +28,7 @@ get_data():
 def get_data(data="train", task="A"):
     # directory for the text file
     directory = os.getcwd() + "/../data/" + task + "/" + data + "_" + task + ".txt"
+    print directory
     directory = os.path.abspath(directory)
     # extract content of the file
     text = extract_txt(directory)
@@ -140,21 +141,21 @@ def preprocess_tweet(txt):
         if re.match(
                 r"\(?(?:(http|https|ftp):\/\/)?(?:((?:[^\W\s]|\.|-|[:]{1})+)@{1})?((?:www.)?(?:[^\W\s]|\.|-)+[\.][^\W\s]{2,4}|localhost(?=\/)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d*))?([\/]?[^\s\?]*[\/]{1})*(?:\/?([^\s\n\?\[\]\{\}\#]*(?:(?=\.)){1}|[^\s\n\?\[\]\{\}\.\#]*)?([\.]{1}[^\s\?\#]*)?)?(?:\?{1}([^\s\n\#\[\]]*))?([\#][^\s\n]*)?\)?",
                 token):
-            token = "%link"
+            token = "@link"
         # ignore not-a-word token
         elif re.match(r"[^A-Za-z]+", tag):
             continue
         # ignore mention @
         elif re.match(r'^@', token):
-            token = "%mention"
+            token = "@mention"
         # for number, replace them with special token
         # ignore not-a-word token
         elif tag == "CD":
-            token = "%number"
+            token = "@number"
         # for emoticon, replace them with special token
         # https://regex101.com/r/aM3cU7/4
         elif re.match(r"(\:\w+\:|\<[\/\\]?3|[\(\)\\\D|\*\$][\-\^]?[\:\;\=]|[\:\;\=B8][\-\^]?[3DOPp\@\$\*\\\)\(\/\|])(?=\s|[\!\.\?]|$)", token):
-            token = "%emoticon"
+            token = "@emoticon" + token
         # for words
         else:
             if not en_dictionary.check(token):
@@ -250,8 +251,10 @@ def get_tokens_only(tokens):
     new_tokens = [token for token, tag in tokens]
     return new_tokens
 
+
 """
-filter tokens: leave only those that appear in one group..later use pmi or idf to filter
+filter tokens:
+leave only those that appear in one group..later use pmi or idf to filter
 """
 
 
