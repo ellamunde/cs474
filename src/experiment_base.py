@@ -7,16 +7,18 @@ def calculate_polarity(tweet_tokens, pos_tokens, neg_tokens):
     sentiment_score = 0
 
     for t in tweet_tokens:
-
+        # print t
         if re.match(r'^@', t):
             continue
 
         t = re.sub(r'_', ' ', t)
-
+        # print t
         if t in pos_tokens:
+            print ">> positive"
             sentiment_score += 1
 
         if t in neg_tokens:
+            print ">> negative"
             sentiment_score -= 1
 
     if sentiment_score > 0:
@@ -31,7 +33,12 @@ def test_sentiment(test, final_tokens_pos, final_tokens_neg):
     sentiment_class = []
 
     for index, values in test.iterrows():
-        tokens = [t for t, tag in preprocessing.extract_tokens(values['CLEANED'])]
+        tokens = preprocessing.extract_tokens(values['CLEANED'])
+        tokens = wordnet.add_synonyms(tokens)
+        tokens = wordnet.lemmatize_words(tokens)
+        # print tokens
+        tokens = preprocessing.remove_stopwords(preprocessing.get_tokens_only(tokens))
+
         sentiment = calculate_polarity(tokens, final_tokens_pos, final_tokens_neg)
         sentiment_class.append(sentiment)
         print "class: " + values['POLARITY']
@@ -98,24 +105,28 @@ final_pos = preprocessing.filter_tokens(ant_syn_pos,set(ant_syn_neg)|set(syn_neu
 final_neg = preprocessing.filter_tokens(ant_syn_neg,set(ant_syn_pos)|set(syn_neu))
 final_neu = preprocessing.filter_tokens(syn_neu,set(ant_syn_neg)|set(ant_syn_pos))
 
-print "pos second filter: "
-print final_pos
-print "neg second filter: "
-print final_neg
-print "neu second filter: "
-print final_neu
+# print "pos second filter: "
+# print final_pos
+# print "neg second filter: "
+# print final_neg
+# print "neu second filter: "
+# print final_neu
 
 # tokens only
-final_tokens_pos = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_pos))
-final_tokens_neg = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_neg))
-final_tokens_neu = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_neu))
+final_lemma_pos = wordnet.lemmatize_words(final_pos)
+final_lemma_neg = wordnet.lemmatize_words(final_neg)
+final_lemma_neu = wordnet.lemmatize_words(final_neu)
 
-print "pos: "
-print final_tokens_pos
-print "neg: "
-print final_tokens_neg
-print "neu: "
-print final_tokens_neu
+final_tokens_pos = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_pos))
+final_tokens_neg = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_neg))
+final_tokens_neu = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_neu))
+
+# print "pos: "
+# print final_tokens_pos
+# print "neg: "
+# print final_tokens_neg
+# print "neu: "
+# print final_tokens_neu
 
 # testing
 test_a = preprocessing.get_data(test, "A")

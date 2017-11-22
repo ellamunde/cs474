@@ -4,6 +4,7 @@ import re
 import io
 import os
 import enchant
+import HTMLParser
 # import string
 
 from textblob import Word
@@ -14,9 +15,10 @@ from textblob import TextBlob
 en_dictionary = enchant.Dict("en_US")
 # import stopwords from nltk
 st_words = nltk.corpus.stopwords.words('english')
-
 # use tweet tokenizer from nltk
 tweet_tok = nltk.TweetTokenizer()
+# html parser
+html_parser = HTMLParser.HTMLParser()
 
 
 """
@@ -65,8 +67,8 @@ def create_table(txt):
 
     for i in range(0, len(txt)):
         # DEVELOPMENT ONLY
-        if i > 10:
-            break
+        # if i > 50:
+        #     break
 
         # split line
         t = txt[i].split('\t')
@@ -114,12 +116,13 @@ def preprocess_tweet(txt):
 
     # normalize text
     txt = re.sub(r'\u2019', '\'', txt)
-    # print txt
-    txt = txt.decode('unicode-escape')
-    txt = txt.encode('utf-8')
-    # print txt
+    print txt
+    # txt = txt.decode('unicode-escape')
+    # txt = txt.encode('utf-8')
+    txt = html_parser.unescape(txt)
+    print txt
 
-    txt = re.sub(r'n\'t', " not", txt)
+    txt = re.sub(r'n\'t', "_not", txt)
     txt = re.sub(r'let\'s', "let us", txt)
 
     # convert hashtag into plain text
