@@ -34,12 +34,12 @@ clf=featureML.train_clf(X,Y)
 
 pred_result=clf.predict(X)
 
-print 'train predicttion results'
+print 'train prediction results'
 featureML.get_accuracy(pred_result,Y)
 
 print 'creating feature vectors for testing'
 X_test,Y_test=featureML.create_X_Y(test_a,features)
 pred_test=clf.predict(X_test)
 
-print 'test predicttion results'
+print 'test prediction results'
 featureML.get_accuracy(pred_test,Y_test)
