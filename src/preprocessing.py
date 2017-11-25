@@ -151,8 +151,8 @@ def preprocess_tweet(txt):
         elif re.match(r"[^A-Za-z]+", tag):
             continue
         # ignore mention @
-        elif re.match(r'^@', token):
-            token = "@mention"
+        # elif re.match(r'^@', token):
+        #     token = "@mention"
         # for number, replace them with special token
         # ignore not-a-word token
         elif tag == "CD":
