@@ -56,6 +56,8 @@ def get_accuracy(predicted,actual):
                 neg+=1
             else:
                 neut+=1
+    print 'number of instance %d: positive %d, negative %d, neutral %d' %(len(actual),pos_num,neg_num,neut_num)
+    print 'overall accuracy'
     print correctly_class / len(actual)
     print 'positive: '
     print pos/pos_num
