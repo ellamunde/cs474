@@ -1,3 +1,4 @@
+from __future__ import division
 import pandas as pd
 import nltk
 import re
@@ -5,6 +6,7 @@ import io
 import os
 import enchant
 import HTMLParser
+import numpy as np
 # import string
 
 from textblob import Word
@@ -265,3 +267,33 @@ def filter_tokens(tokens, tokens_to_remove):
     uniq_tokens = set(tokens) - set(tokens_to_remove)
     tokens = [t for t in tokens if t in uniq_tokens]
     return tokens
+
+#returns only tokens with pmi higher than threshold
+#sets=positive negative neutral
+def filter_pmi(sets,th=0.9):
+    result=[]
+    for i in range(0,len(sets)):
+        pmi_set={}
+        #polarity class
+        cl=sets[i]
+        indices=[idx for idx in range(0,len(sets)) if idx!=i]
+        print indices
+        other=[]
+        all_tokens=cl
+        for idx in indices:
+            other.append(sets[idx])
+            all_tokens.extend(sets[idx])
+        tot_num_cl=len(cl)
+        tot_num=sum([len(a) for a in sets])
+        for token in set(cl):
+            pr_cl_token=cl.count(token)/tot_num_cl
+            pr_cl=tot_num_cl/tot_num
+            pr_token=all_tokens.count(token)/tot_num_cl
+            pmi=np.log2(pr_cl_token/(pr_cl*pr_token))
+            print pmi
+            if pmi>=th:
+                pmi_set[token]=pmi
+
+        result.extend(pmi_set.keys())
+        print result
+    return result

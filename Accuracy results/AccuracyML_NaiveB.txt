@@ -1,0 +1,21 @@
+train predicttion results
+number of instance 2000: positive 1013, negative 215, neutral 772
+overall accuracy
+0.872
+positive: 
+0.960513326752
+negative
+0.632558139535
+neutral
+0.822538860104
+creating feature vectors for testing
+test predicttion results
+number of instance 16341: positive 5658, negative 2434, neutral 8249
+overall accuracy
+0.473716418824
+positive: 
+0.834570519618
+negative
+0.0546425636812
+neutral
+0.349860589162
