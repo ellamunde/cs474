@@ -23,8 +23,8 @@ def save_preprocess(text, type="train", task="A"):
 
 
 def preprocess():
-    train_a = preprocessing.get_data('train', 'A')
-    save_preprocess(train_a, 'train', 'A')
+    # train_a = preprocessing.get_data('train', 'A')
+    # save_preprocess(train_a, 'train', 'A')
 
     train_b = preprocessing.get_data('train', 'B')
     save_preprocess(train_b, 'train', 'B')

@@ -299,11 +299,13 @@ def get_tokens(table, polarity=None, data='CLEANED'):
     return tokens
 
 
-def get_subset(table, polarity=None):
+def get_subset(table, polarity=None, topic=None):
+    subset = table
     if polarity is not None:
         subset = table.loc[table['POLARITY'] == polarity]
-    else:
-        return table
+
+    if topic is not None:
+        subset = subset.loc[table['TOPIC'] == topic]
 
     return subset
 
