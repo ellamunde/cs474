@@ -12,6 +12,8 @@ from pprint import pprint
 
 # --- get training data
 # train_b = preprocessing.get_data('train', 'B')
+from measurements import predict
+
 dataset = 'B'
 train_b = preprocessing.open_preprocess_file('train', dataset)
 
@@ -94,8 +96,8 @@ csr_matrix_train = lda.build_matrix_csr(vectorizer=vectorizer,
 # svm_model = svm.train_svm(text_train, pol_train)
 # svm.predict(text_test, pol_test, svm_model)
 
-svm_model = svm.split_and_train(bow_vectorizer, polarity)
-svm_model_lda = svm.split_and_train(csr_matrix_train, polarity)
+train_model = svm.split_and_train(bow_vectorizer, polarity)
+train_model_lda = svm.split_and_train(csr_matrix_train, polarity)
 
 ## --- to get all the topics from lda
 # all_topics = lda_model.get_document_topics(bow=bow_lda, per_word_topics=True)
@@ -131,9 +133,9 @@ csr_matrix_test = lda.build_matrix_csr(vectorizer=vectorizer,
                                        topics=test_topics,
                                        texts=test_text
                                        )
-print csr_matrix_test
+# print csr_matrix_test
 # print csr_matrix_test.shape
 
 # --- build svm model >> for polarity
-prediction_res = svm.predict(csr_matrix_test, test_polarity, svm_model)
-prediction_res_lda = svm.predict(csr_matrix_test, test_polarity, svm_model_lda)
+prediction_res = predict(csr_matrix_test, test_polarity, train_model)
+prediction_res_lda = predict(csr_matrix_test, test_polarity, train_model_lda)

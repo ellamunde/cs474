@@ -1,3 +1,7 @@
+from pandas import DataFrame
+from sklearn.metrics import classification_report, f1_score, accuracy_score, confusion_matrix
+
+
 def avg_recall(table):
     # AvgRec = 1/N (R1+ ... + RN)
     # N = number of sentiment class
@@ -141,3 +145,14 @@ def standard_mae(table):
 
     mae = float(differences) / float(n_total)
     return mae
+
+
+def predict(text_test, label_test, model):
+    prediction = model.predict(text_test)
+    print ">> model score: "
+    print model.score(text_test, label_test)
+    print ">> model report: "
+    pol_pre = label_test.to_frame().reset_index(drop=True).join(DataFrame({'PREDICTION': prediction}))
+    print pol_pre
+    print classification_report(label_test, prediction)
+    return pol_pre

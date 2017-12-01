@@ -9,6 +9,7 @@ import HTMLParser
 import numpy as np
 
 from joblib import Parallel, delayed
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from textblob import Word
 
@@ -388,3 +389,10 @@ def filter_pmi(sets,th=0.9):
         result.extend(pmi_set.keys())
         print result
     return result
+
+def split_data(text, label, test_size=0.2, random_state=8):
+    text_train, text_test, label_train, label_test = train_test_split(
+        text, label, test_size=test_size, random_state=random_state
+    )
+
+    return text_train, text_test, label_train, label_test
