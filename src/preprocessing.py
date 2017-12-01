@@ -7,10 +7,10 @@ import os
 import enchant
 import HTMLParser
 import numpy as np
-# import string
 
+from joblib import Parallel, delayed
+from tqdm import tqdm
 from textblob import Word
-from textblob import TextBlob
 
 
 # import dictionary from enchant library
@@ -23,53 +23,134 @@ tweet_tok = nltk.TweetTokenizer()
 html_parser = HTMLParser.HTMLParser()
 
 
-"""
-get_data():
-    Read data from text file and put it in data frame
-"""
+def get_root_dir():
+    """
+    get_data():
+    - Read data from text file and put it in data frame
+    """
+    getcwd = os.getcwd
+    directory = getcwd()
+
+    while True:
+        path = os.path.basename(os.getcwd())
+        if path == "cs474":
+            return os.path.abspath(directory)
+
+        os.chdir("..")
+        directory += "/.."
 
 
 def get_data(data="train", task="A"):
     # directory for the text file
-    directory = os.getcwd() + "/../data/" + task + "/" + data + "_" + task + ".txt"
-    print directory
-    directory = os.path.abspath(directory)
+    rootdir = get_root_dir()
+    # directory = os.getcwd() + "/data/" + task + "/" + data + "_" + task + ".txt"
+    # directory = "s%s%/s%/s%_s%s%".format(getcwd(), "/data", task, data, task, ".txt")
+    directory = "{}{}/{}/{}_{}{}".format(rootdir, "/data", task, data, task, ".txt")
+
     # extract content of the file
-    text = extract_txt(directory)
     # make data frame table
-    table = create_table(text)
-    return table
+    return create_table(extract_txt(os.path.abspath(directory)))
 
 
-"""
-extract_txt():
-    Reading text file per line
-"""
+def open_preprocess_file(data="train", task="A"):
+    rootdir = get_root_dir()
+    directory = "{}{}/{}_{}{}".format(rootdir, "/preprocess", data, task, ".txt")
 
-
-def extract_txt(filename):
-    raw = io.open('%s' % filename, 'r', encoding='utf-8').readlines()
-    lines = [a.decode('utf-8').strip() for a in raw]
-    # print lines
-    return lines
-
-
-"""
-create_table()
-    create data frame for tweets data
-"""
-
-
-def create_table(txt):
     table = pd.DataFrame()
     tweets = []
     polarity = []
     topics = []
     cleaned = []
+    cleaned_token = []
 
-    for i in range(0, len(txt)):
+    appendtweets = tweets.append
+    appendpolarity = polarity.append
+    appendtopics = topics.append
+    appendcleaned = cleaned.append
+    appendcleanedtoken = cleaned_token.append
+    join = " ".join
+
+    for line in tqdm(extract_txt(os.path.abspath(directory))):
+        # f.write(row['TWEET'])
+        # f.write("\t")
+        # f.write(row['CLEANED'])
+        # f.write("\t")
+        # f.write(",".join(row['CLEANED_TOKEN']))
+        # f.write("\t")
+        # if task != "A":
+        #     f.write(row['TOPIC'])
+        #     f.write("\t")
+        # f.write(row['POLARITY'])
+        # f.write("\n")
+
+        line = line.split('\t')
+        # tweet text
+        t_tweet = line[0]
+        t_cleaned = line[1]
+        t_cleaned_tokens = line[2]
+
+        if len(line) > 4:
+            # tweet polarity
+            appendtopics(line[3])
+            # tweet polarity
+            t_polarity = line[4]
+        # for task B and C
+        else:
+            # tweet polarity
+            t_polarity = line[3]
+
+
+        appendtweets(t_tweet)
+        appendpolarity(t_polarity)
+        appendcleaned(t_cleaned)
+        appendcleanedtoken(t_cleaned_tokens)
+
+    table['TWEET'] = tweets
+    table['POLARITY'] = polarity
+    table['CLEANED'] = cleaned
+    table['CLEANED_TOKEN'] = cleaned_token
+
+    if len(topics) > 0:
+        table['TOPIC'] = topics
+
+    # drop duplicates
+    table.drop_duplicates('TWEET', inplace=True)
+    return table
+
+
+def extract_txt(filename):
+    """
+    extract_txt():
+    - Reading text file per line
+    """
+    # raw = io.open('%s' % filename, 'r', encoding='utf-8').readlines()
+    lines = [a.decode('utf-8').strip() for a in io.open('%s' % filename, 'r', encoding='utf-8').readlines()]
+    # print lines
+    return lines
+
+
+def create_table(txt):
+    """
+    create_table()
+    create data frame for tweets data
+    """
+    table = pd.DataFrame()
+    tweets = []
+    polarity = []
+    topics = []
+    cleaned = []
+    cleaned_token = []
+
+    appendtweets = tweets.append
+    appendpolarity = polarity.append
+    appendtopics = topics.append
+    appendcleaned = cleaned.append
+    appendcleanedtoken = cleaned_token.append
+    join = " ".join
+
+    for i in tqdm(range(0, len(txt))):
         # DEVELOPMENT ONLY
-        # if i > 50:
+        # if i > 30:
         #     break
 
         # split line
@@ -78,14 +159,14 @@ def create_table(txt):
 
         # tweet text
         t_text = t[0]
-        t_cleaned = " ".join(preprocess_tweet(t_text))
-        t_polarity = None
+        cleaned_text = preprocess_tweet(t_text)
+        t_cleaned = join(cleaned_text)
+        # t_polarity = None
 
-        # for task A
+        # for task B, C
         if len(t) > 2:
             # tweet polarity
-            t_topic = t[1]
-            topics.append(t_topic)
+            appendtopics(t[1])
             # tweet polarity
             t_polarity = t[2]
         # for task B and C
@@ -93,13 +174,15 @@ def create_table(txt):
             # tweet polarity
             t_polarity = t[1]
 
-        tweets.append(t_text)
-        polarity.append(t_polarity)
-        cleaned.append(t_cleaned)
+        appendtweets(t_text)
+        appendpolarity(t_polarity)
+        appendcleaned(t_cleaned)
+        appendcleanedtoken(cleaned_text)
 
     table['TWEET'] = tweets
     table['POLARITY'] = polarity
     table['CLEANED'] = cleaned
+    table['CLEANED_TOKEN'] = cleaned_token
 
     if len(topics) > 0:
         table['TOPIC'] = topics
@@ -114,41 +197,49 @@ def create_table(txt):
 
 
 def preprocess_tweet(txt):
+    new_tokens = []
     txt = txt.lower()
 
+    replace = re.sub
+    ismatch = re.match
+    appendnewtoken = new_tokens.append
+
     # normalize text
-    txt = re.sub(r'\u2019', '\'', txt)
+    txt = replace(r'\u2019', '\'', txt)
     print txt
     # txt = txt.decode('unicode-escape')
     # txt = txt.encode('utf-8')
-    txt = html_parser.unescape(txt)
-    print txt
+    # txt = html_parser.unescape(txt)
+    # print txt
 
-    txt = re.sub(r'n\'t', "_not", txt)
-    txt = re.sub(r'let\'s', "let us", txt)
+    txt = html_parser.unescape(txt)
+
+    txt = replace(r'n\'t', "_not", txt)
+    txt = replace(r'let\'s', "let us", txt)
+    txt = replace(r'[#\\"]', " ", txt)
+    txt = replace(r'\s+', " ", txt)
 
     # convert hashtag into plain text
     # convert some of the characters into spaces
     # remove multiple spaces
-    txt = re.sub(r'[#\\"]', " ", txt)
-    txt = re.sub(r'\s+', " ", txt)
+    # txt = replace(r'[#\\"]', " ", txt)
+    # txt = replace(r'\s+', " ", txt)
     # print txt
 
     tokenizer = nltk.TweetTokenizer()
     tokens = tokenizer.tokenize(txt)
 
-    new_tokens = []
     for token, tag in nltk.pos_tag(tokens):
         # print tag + "-" + token
 
         # for link, replace them with special token
         # https://someweblog.com/url-regular-expression-javascript-link-shortener/
-        if re.match(
+        if ismatch(
                 r"\(?(?:(http|https|ftp):\/\/)?(?:((?:[^\W\s]|\.|-|[:]{1})+)@{1})?((?:www.)?(?:[^\W\s]|\.|-)+[\.][^\W\s]{2,4}|localhost(?=\/)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d*))?([\/]?[^\s\?]*[\/]{1})*(?:\/?([^\s\n\?\[\]\{\}\#]*(?:(?=\.)){1}|[^\s\n\?\[\]\{\}\.\#]*)?([\.]{1}[^\s\?\#]*)?)?(?:\?{1}([^\s\n\#\[\]]*))?([\#][^\s\n]*)?\)?",
                 token):
             token = "@link"
         # ignore not-a-word token
-        elif re.match(r"[^A-Za-z]+", tag):
+        elif ismatch(r"[^A-Za-z]+", tag):
             continue
         # ignore mention @
         # elif re.match(r'^@', token):
@@ -159,7 +250,7 @@ def preprocess_tweet(txt):
             token = "@number"
         # for emoticon, replace them with special token
         # https://regex101.com/r/aM3cU7/4
-        elif re.match(r"(\:\w+\:|\<[\/\\]?3|[\(\)\\\D|\*\$][\-\^]?[\:\;\=]|[\:\;\=B8][\-\^]?[3DOPp\@\$\*\\\)\(\/\|])(?=\s|[\!\.\?]|$)", token):
+        elif ismatch(r"(\:\w+\:|\<[\/\\]?3|[\(\)\\\D|\*\$][\-\^]?[\:\;\=]|[\:\;\=B8][\-\^]?[3DOPp\@\$\*\\\)\(\/\|])(?=\s|[\!\.\?]|$)", token):
             token = "@emoticon" + token
         # for words
         else:
@@ -181,7 +272,7 @@ def preprocess_tweet(txt):
                     # print "spelling token: " + token
 
         # print token
-        new_tokens.append(token.encode('utf-8'))
+        appendnewtoken(token.encode('utf-8'))
 
     # print new_tokens
     return new_tokens
@@ -189,18 +280,24 @@ def preprocess_tweet(txt):
 
 def get_tokens(table, polarity=None, data='CLEANED'):
     # get subset table based on polarity type
-    subset = get_subset(table, polarity)
+    if polarity is not None:
+        subset = get_subset(table, polarity)
+    else:
+        subset = table
     # print subset
-    tokens = []
-
-    for index, row in subset.iterrows():
-        tokens = tokens + extract_tokens(row[data])
+    tokens = [extract_tokens(row[data]) for index, row in subset.iterrows()]
+    # tokens = []
+    # print ">> extractions:"
+    # for index, row in subset.iterrows():
+        # extractions = extract_tokens(row[data])
+        # tokens += extract_tokens(row[data])
+        # print extractions
+        # tokens += extractions
 
     return tokens
 
 
 def get_subset(table, polarity=None):
-    subset = None
     if polarity is not None:
         subset = table.loc[table['POLARITY'] == polarity]
     else:
@@ -210,26 +307,22 @@ def get_subset(table, polarity=None):
 
 
 def extract_tokens(txt):
-    txt = txt.lower()
-
-    tokens = tweet_tok.tokenize(txt)
-    print tokens
-
-    tags = get_tags()
-    tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in tags]
-
+    tokens = tweet_tok.tokenize(txt.lower())
+    # print tokens
+    tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in get_tags()]
     return tokens
 
 
-def detect_lang(txt):
-    tblob = TextBlob(txt.decode('utf-8'))
-    lang = tblob.detect_language()
-    print lang
-    return lang
+# def detect_lang(txt):
+#     tblob = TextBlob(txt.decode('utf-8'))
+#     lang = tblob.detect_language()
+#     print lang
+#     return lang
 
 
 def remove_stopwords(tokenize_txt):
     # remove stop words
+    # print st_words
     tokens = [x for x in tokenize_txt if x not in st_words] # don't filter stopwords to extract negative words
     return tokens
 
@@ -239,13 +332,10 @@ def get_tags():
 
     # extend adjective pos tags
     tags.extend(['JJ', 'JJR', 'JJS'])
-
     # extend noun pos tags
     tags.extend(['NN', 'NNS', 'NNP', 'NNPS'])
-
     # extend adverb pos tags
     tags.extend(['RB', 'RBR', 'RBS'])
-
     # extend verb pos tags
     tags.extend(['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ'])
 
@@ -257,20 +347,21 @@ def get_tokens_only(tokens):
     return new_tokens
 
 
-"""
-filter tokens:
-leave only those that appear in one group..later use pmi or idf to filter
-"""
-
-
 def filter_tokens(tokens, tokens_to_remove):
-    uniq_tokens = set(tokens) - set(tokens_to_remove)
-    tokens = [t for t in tokens if t in uniq_tokens]
+    """
+    filter tokens:
+    leave only those that appear in one group..later use pmi or idf to filter
+    """
+    unique_tokens = set(tokens) - set(tokens_to_remove)
+    tokens = [t for t in tokens if t in unique_tokens]
     return tokens
 
-#returns only tokens with pmi higher than threshold
-#sets=positive negative neutral
+
 def filter_pmi(sets,th=0.9):
+    """
+    returns only tokens with pmi higher than threshold
+    sets = positive negative neutral
+    """
     result=[]
     for i in range(0,len(sets)):
         pmi_set={}

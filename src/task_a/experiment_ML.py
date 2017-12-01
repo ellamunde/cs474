@@ -28,18 +28,18 @@ print len(tokens_pos), len(tokens_neg),len(tokens_neu)
 
 features=preprocessing.filter_pmi([tokens_pos,tokens_neg,tokens_neu])
 print 'creating feature vectors for training'
-X,Y=featureML.create_X_Y(train_a[:2000],features)
+X,Y= featureML.create_X_Y(train_a[:2000], features)
 
-clf=featureML.train_clf(X,Y)
+clf= featureML.train_clf(X, Y)
 
 pred_result=clf.predict(X)
 
 print 'train prediction results'
-featureML.get_accuracy(pred_result,Y)
+featureML.get_accuracy(pred_result, Y)
 
 print 'creating feature vectors for testing'
-X_test,Y_test=featureML.create_X_Y(test_a,features)
+X_test,Y_test= featureML.create_X_Y(test_a, features)
 pred_test=clf.predict(X_test)
 
 print 'test prediction results'
-featureML.get_accuracy(pred_test,Y_test)
+featureML.get_accuracy(pred_test, Y_test)

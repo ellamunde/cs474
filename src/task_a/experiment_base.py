@@ -1,6 +1,7 @@
 import preprocessing
 import wordnet
 import re
+import measurements
 
 
 def calculate_polarity(tweet_tokens, pos_tokens, neg_tokens):
@@ -48,17 +49,6 @@ def test_sentiment(test, final_tokens_pos, final_tokens_neg):
     return test
 
 
-def get_accuracy(result):
-    classified_correctly = 0
-    for idx, values in result.iterrows():
-
-        if values['POLARITY'] == values['PREDICTION']:
-            classified_correctly += 1
-
-    accuracy = classified_correctly / len(result)
-    return accuracy
-
-
 train = "train"
 test = "test"
 pos = "positive"
@@ -68,6 +58,11 @@ neu = "neutral"
 train_a = preprocessing.get_data(train, "A")
 # train_a_tokens = preprocessing.get_tokens(train_a, None, 'TWEET')
 # print train_a_tokens
+
+# for faster training
+# tokens_pos = preprocessing.get_subset(train_a, pos)
+# tokens_neg = preprocessing.get_subset(train_a, neg)
+# tokens_neu = preprocessing.get_subset(train_a, neu)
 
 # get tokens for all class
 tokens_pos = preprocessing.get_tokens(train_a, pos, 'CLEANED')
@@ -130,8 +125,9 @@ final_tokens_neu = preprocessing.remove_stopwords(preprocessing.get_tokens_only(
 
 # testing
 test_a = preprocessing.get_data(test, "A")
+test_a = test_a[:50]
 test_a_result = test_sentiment(test_a, final_tokens_pos, final_tokens_neg)
 
 # test accuracy
-accuracy_a = get_accuracy(test_a_result)
+accuracy_a = measurements.get_accuracy(test_a_result)
 print accuracy_a

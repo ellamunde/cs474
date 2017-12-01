@@ -1,0 +1,508 @@
+# https://link.springer.com/chapter/10.1007%2F978-3-642-13657-3_43
+import os
+import numpy
+import lda
+import preprocessing
+import wordnet
+import svm
+
+from pprint import pprint
+from numpy import core
+from gensim import matutils
+
+train = "train"
+test = "test"
+pos = "positive"
+neg = "negative"
+neu = "neutral"
+
+train_b = preprocessing.get_data(train, "B")
+
+# make dictionary --> for building LDA model
+text = train_b['CLEANED_TOKEN']
+lables = train_b['POLARITY']
+
+num_train = len(train_b)
+num_topics = len(train_b['TOPIC'].value_counts())
+
+passes = 20
+alpha = 'auto'  # or float number
+directory = '{}{}_{}_{}_{}_{}'.format(os.getcwd(), "/model/lda_", str(num_train), str(num_topics), str(passes),
+                                      str(alpha))
+dict_directory = '{}{}_{}_{}_{}_{}'.format(os.getcwd(), "/dictionary/lda_", str(num_train), str(num_topics), str(passes),
+                                      str(alpha))
+directory = os.path.abspath(directory)
+
+# to have the same result each it runs
+# numpy.random.random(1)
+
+# if os.path.exists(directory):
+#     lda_model = lda.load_lda_model(directory)
+#     dictionary = lda.load_lda_model(dict_directory)
+# else:
+tokens = []
+# print train_b['CLEANED']
+for row in train_b['CLEANED']:
+    tokens.append(preprocessing.extract_tokens(row))
+
+# tokens = preprocessing.get_tokens(train_b, 'CLEANED')
+# print ">> tokens"
+# print tokens
+lemma = []
+
+for x in tokens:
+    lemma.append(wordnet.lemmatize_words(x))
+
+# print ">> lemma"
+# print lemma
+
+no_stopwords = []
+no_stopwords_sent = []
+for x in lemma:
+    # print x
+    x = preprocessing.get_tokens_only(x)
+    x = preprocessing.remove_stopwords(x)
+    no_stopwords.append(x)
+    no_stopwords_sent.append(" ".join(x))
+    print x
+
+print ">> no stopwords"
+pprint(no_stopwords_sent)
+vectorizer = lda.count_vectorizer()
+vectorizer = lda.fit_to_vectorizer(vectorizer, no_stopwords_sent)
+count_vect = lda.transform_text(vectorizer, no_stopwords_sent)
+feature_names = vectorizer.get_feature_names()
+
+print ">> feature names"
+pprint(feature_names)
+
+# dictionary2 = lda.get_dictionary(no_stopwords)
+# dictionary = vectorizer.vocabulary_
+# dict_keys = sorted(dictionary.keys())
+# print "keys"
+# print dict_keys
+# dictfromvec = lda.get_dictionary(dict_keys)
+idvec2word = {v: k for k, v in vectorizer.vocabulary_.items()}
+
+# print ">> dictionary"
+# print dictfromvec
+# dictionary.save(dict_directory)
+# pprint(dictionary)
+# print ">> dictionary 2"
+# print dictionary2
+# for k in dictfromvec:
+#     print k
+#     print dictfromvec[k]
+#     print dictionary[dictfromvec[k]]
+dict_len = len(idvec2word)
+
+# bag_of_word = lda.get_bow_representation(dictionary=dictionary, text=no_stopwords)
+# print ">> try to see the type"
+# for x in count_vect:
+    # print x
+    # print type(x)
+    # print x[0]
+    # print type(x[0])
+
+# bag_of_word = count_vect
+bag_of_word_lda = matutils.Sparse2Corpus(count_vect, documents_columns=False)
+for k in bag_of_word_lda:
+    print k
+# bag_of_word_vect = count_vect
+# bag_of_word_lda = lda.get_bow_representation(dictionary=dictionary2, text=text)
+# print ">> bag of word"
+# print bag_of_word
+print ">> sparse2corpus"
+print bag_of_word_lda
+# print ">> bag of word to array"
+# print bag_of_word_vect
+# print ">> bag of word lda"
+# print bag_of_word_lda
+
+# freq = numpy.ravel(count_vect.sum(axis=0))
+# vocab = [v[0] for v in sorted(vectorizer.vocabulary_.items(), key=operator.itemgetter(1))]
+# vocab = [v[0] for v in sorted(dictionary.items(), key=lambda tup: tup[1])]
+# fdist = dict(zip(vocab, freq))
+# print ">> fdist"
+# print fdist
+
+lda_model = lda.build_lda_model(word_bag=bag_of_word_lda,
+                                dictionary=idvec2word,
+                                num_topics=num_topics,
+                                alpha=alpha,
+                                passes=passes
+                                )
+
+x_train, x_test, y_train, y_test = svm.split_data(
+    count_vect, lables)
+
+svm_model = svm.train_svm(x_train, y_train)
+svm.predict(x_test, y_test, svm_model)
+
+print ">> get document topics for entire corpus"
+# lda_model.save(directory)
+all_topics = lda_model.get_document_topics(bow=bag_of_word_lda, per_word_topics=True)
+
+# for doc_topics, word_topics, phi_values in all_topics:
+#     print 'New Document \n'
+#     print 'Document topics:', doc_topics
+#     print 'Word topics:', word_topics
+#     print 'Phi values:', phi_values
+#     print " "
+#     print '-------------- \n'
+
+print ">> all topics"
+print lda_model.show_topics(num_topics=num_topics)
+# lda_model.print_topics(num_topics)
+# topic = "aaron rodgers".lower().split(" ")
+topic = "samuel rodgers".lower().split(" ")
+print ">> topic"
+print topic
+query = "Was supposed to come up with a filler piece idea before my appointment tomorrow and didn't. " \
+        "Gonna come out looking like Randy Orton. SKULLS!".lower().split(" ")
+conv_query = matutils.Sparse2Corpus(lda.transform_text(vectorizer, topic), documents_columns=False)
+vector = list(lda_model[conv_query])
+print ">> query bow vector"
+qquery = []
+for x in conv_query:
+    print x
+    qquery += x
+# print conv_query
+print qquery
+
+print ">> chosen topic"
+pprint(vector)
+print ">> chosen topic[0]"
+pprint(vector[0])
+
+# print [[(feature_names[int(idx)], w) for w, idx in topic] for topic in lda_model.show_topics()]
+
+doc_topics, word_topics, phi_values = lda_model.get_document_topics(qquery, per_word_topics=True)
+print ">> get document topics"
+pprint(doc_topics)
+# sorted_by_second = sorted(vector[0], key=lambda tup: tup[1], reverse=True)
+sorted_by_second = sorted(doc_topics, key=lambda tup: tup[1], reverse=True)[0]
+topicno = sorted_by_second[0]
+# lda_model.per_word_topics()
+print ">> sorted by second: first"
+print sorted_by_second
+print topicno
+print ">> word_topics"
+print word_topics
+print ">> phi values"
+print phi_values
+
+print " >> ------------------------------ for query"
+# transform into LDA space
+conv_query = matutils.Sparse2Corpus(lda.transform_text(vectorizer, query), documents_columns=False)
+vector = list(lda_model[conv_query])
+print ">> query bow vector"
+qquery = []
+for x in conv_query:
+    print x
+    qquery += x
+# print conv_query
+print qquery
+
+print ">> lda vector ==  get docs"
+pprint(vector)
+print ">> word topics"
+word_topics = lda_model.show_topic(topicid=topicno, topn=dict_len)
+print word_topics
+words_in_topic = dict((w, prob) for w, prob in word_topics)
+print words_in_topic
+
+# query_vector = lda_model.id2word.doc2bow(query)
+prob_in_topic = [prob for w, prob in word_topics]
+# arr = core.numeric.zeros(dict_len)
+# print ">> arr"
+# print arr
+
+ids = lda_model[matutils.Sparse2Corpus(lda.transform_text(vectorizer, query), documents_columns=False)]
+print ids
+
+doc_topics, word_topics, phi_values = lda_model.get_document_topics(ids, per_word_topics=True)
+print ">> get document topics"
+pprint(doc_topics)
+sorted_by_second = sorted(doc_topics, key=lambda tup: tup[1], reverse=True)[0]
+topicno = sorted_by_second[0][0]
+# lda_model.per_word_topics()
+print ">> sorted by second: first"
+print sorted_by_second
+print topicno
+print ">> word_topics"
+print word_topics
+print ">> phi values"
+print phi_values
+
+# for word in query:
+#     print "query word: ", word
+#     if word not in words_in_topic.keys():
+#         print "not in topic"
+#         continue
+#
+#     ids = lda_model.id2word.doc2bow(word)
+#     prob = words_in_topic[word]
+#     arr[ids] = prob
+#     print ids, prob
+#     print arr[ids]
+# pprint(lda_model.get_topics_terms(topicid=topicno, topn=dict_len))
+
+
+# print the document's single most prominent LDA topic
+# print ">> single most prominent lda topic"
+# print(lda_model.print_topic(max(lda_vector, key=lambda item: item[1])[0]))
+# a = list(sorted(lda_model[lda_vector], key=lambda n: n[1]))
+# print "a[0]"
+# print a[0][0]
+# print a[0]
+# print "a[-1]"
+# print a[-1][0]
+# print a[-1]
+# print a
+# print "least related"
+# lda_model.print_topic(topicno=a[0][0])
+# lda_model.print_topic(a[0][0]) #least related
+# print "most related"
+# lda_model.print_topic(topicno=a[-1][0])
+# lda_model.print_topic(a[-1][0]) #most related
+
+
+
+# for i in lda_model.show_topics(topn=len(dictionary)):
+#     print i
+# top_words = [[word for _, word in lda_model.show_topic(topicno, topn=50)] for topicno in range(lda_model.num_topics)]
+
+# for topicno, words in enumerate(top_words):
+#     other_words = all_words.difference(words)
+#     replacement = np.random.choice(list(other_words))
+#     replacements.append((words[replace_index[topicno]], replacement))
+#     words[replace_index[topicno]] = replacement
+#     print("%i: %s" % (topicno, ' '.join(words[:10])))
+
+# for topic in doc_topics:
+#     print lda_model.show_topic(topicid=topic[0], topn=10)
+
+
+for i in range(len_test):
+    print ">> topic"
+    print b_topics[i]
+    if b_topics[i] in topic_list.keys():
+        topicno = topic_list[b_topics[i]]
+    else:
+        bow_topic = lda.process_to_bow(vectorizer, lda_model, b_topics[i])[0]
+        # topicno = lda.process_to_get_topicno(lda_model, bow_topic, 'doc')
+        topicno = sorted(bow_topic, key=lambda tup: tup[1], reverse=True)[0][0]
+        print ">> bow topic"
+        print bow_topic
+        topic_list[b_topics[i]] = topicno
+    print ">> topic no"
+    print topicno
+
+    print b_text[i]
+    txt = lda.transform_text(vectorizer, [b_text[i]])
+    print type(txt)
+    print ">> matrix"
+    print txt
+    txt = txt.tolil(txt)
+    value = txt.data[0]
+    column = txt.rows[0]
+    print ">> value"
+    print value
+    print ">> column"
+    print column
+
+    print txt
+    for i in range(len(column)):
+        name = lda.get_feature_names(vectorizer)[i]
+        print ">> name"
+        print column[i]
+        print value[i]
+        print name
+        # print txt[0][column[i]]
+        # print topic_words_dist[topicno][name]
+        if name in topic_words_dist[topicno].keys():
+            # column[i] = str(topic_words_dist[topicno][name])
+            # value[i] = topic_words_dist[topicno][name]
+
+            value[i] = topic_words_dist[topicno][name]
+            print value[i]
+
+        arr_indeces.append(column[i])
+        arr_data.append(value[i])
+        arr_indptr.append(len(arr_indeces))
+            # txt[0][column[i]] = topic_words_dist[topicno][name]
+            # print txt[0][column[i]]
+    # print ">> array"
+    # print txt.todense()
+    # txt = lda.convert_to_lda_bow(txt)
+    # print ">> matrix after"
+    # print column
+    # print value
+    # row_idx = numpy.core.numeric.zeros(len(value))
+    # value = numpy.array(value)
+    # column = numpy.array(column)
+    # csr_matrix = sparse.csr_matrix((value, (row_idx, column)))
+    # print csr_matrix
+    arr_cols.append(column)
+    arr_values.append(value)
+    arr_rows.append(numpy.full((1,len(column)), i, dtype=int))
+    # break
+
+# >> docs = [["hello", "world", "hello"], ["goodbye", "cruel", "world"]]
+# >>> indptr = [0]
+# >>> indices = []
+# >>> data = []
+# >>> vocabulary = {}
+# >>> for d in docs:
+# ...     for term in d:
+# ...         index = vocabulary.setdefault(term, len(vocabulary))
+# ...         indices.append(index)
+# ...         data.append(1)
+# ...     indptr.append(len(indices))
+# ...
+# >>> csr_matrix((data, indices, indptr), dtype=int).toarray()
+# array([[2, 1, 0, 0],
+#        [0, 1, 1, 1]])
+
+# row_idx = numpy.core.numeric.zeros(len(arr_values))
+# values = numpy.matrix(arr_values)
+# columns = numpy.matrix(arr_cols)
+# rows = numpy.matrix(arr_rows)
+# print "values"
+# print arr_values
+# print "cols"
+# print arr_cols
+
+print "indeces"
+print arr_indeces
+print "indptr"
+print arr_indptr
+print "data"
+print arr_data
+
+
+topic_list = {}
+
+    idx_range = len(vectorizer.vocabulary_)
+    print ">> vocabulary range"
+    print idx_range
+    len_text = len(topics)
+    arr_sents = []
+    arr_indptr = []
+    # arr_indptr = [x for x in range(idx_range)]
+    arr_indeces = []
+    arr_data = []
+
+    coor_nth = []
+    data_nth = []
+    x_nth = []
+    y_nth = []
+    dokmatrix = dok_matrix((len_text, idx_range))
+    csrmatrix = None
+
+    for i in tqdm(range(len_text)):
+        text_nth = [0.0] * idx_range
+
+        print ">> topic"
+        print topics[i]
+        if topics[i] in topic_list.keys():
+            topicno = topic_list[topics[i]]
+        else:
+            bow_topic = process_to_bow(vectorizer, lda_model, topics[i])[0]
+            topicno = sorted(bow_topic, key=lambda tup: tup[1], reverse=True)[0][0]
+            print ">> bow topic"
+            print bow_topic
+            topic_list[topics[i]] = topicno
+        print ">> topic no"
+        print topicno
+
+        print texts[i]
+        txt = transform_text(vectorizer, [texts[i]])
+        print type(txt)
+        print ">> matrix"
+        print txt
+        txt = txt.tolil(txt)
+        value = txt.data[0]
+        column = txt.rows[0]
+        print ">> value"
+        print value
+        print ">> column"
+        print column
+
+        print txt
+        print value
+        for idx in tqdm(range(len(column))):
+            name = get_feature_names(vectorizer)[idx]
+            print ">> name"
+            print column[idx]
+            print value[idx]
+            print name
+
+            # value[idx] = topic_words_dist[topicno][name] * value[idx] if name in topic_words_dist[topicno].keys() else 0
+            value[idx] = topic_words_dist[topicno][name] * value[idx] if name in topic_words_dist[topicno].keys() else 0
+            print value[idx]
+            print value
+
+            text_nth[column[idx]] = value[idx]
+            # dokmatrix[i][column[idx]] = value[idx]
+            # arr_indeces.append(column[idx])
+            # arr_data.append(value[idx])
+            # arr_indptr.append(len(arr_indeces))
+            # arr_sents.append(value)
+            # print ">> type"
+            # print type(arr_sents)
+            # print ">> type"
+            # print type(value)
+
+        temp = csr_matrix(text_nth)
+        if csrmatrix is not None:
+            csrmatrix = vstack([csrmatrix, temp])
+        else:
+            csrmatrix = temp
+
+        coor_nth.extend([[i, k] for k in range(idx_range)])
+        data_nth.extend([[k] for k in text_nth])
+        x_nth.extend([i] * idx_range)
+        y_nth.extend(k for k in range(idx_range))
+        # break
+
+    # print csrmatrix
+    # print csrmatrix.shape
+    # print coor_nth
+    # print data_nth
+    # print x_nth
+    # print y_nth
+    # print (x_nth)
+    # print (y_nth)
+    # print len(coor_nth)
+    # print len(data_nth)
+    # print "indeces"
+    # print arr_indeces
+    # print "indptr"
+    # print arr_indptr
+    # print "data"
+    # print arr_data
+    # dense_matrix = numpy.array(arr_sents)
+    # print "arr sents"
+    # print arr_sents
+    # print "dense matrix"
+    # print dense_matrix
+
+    # coo_coor = coo_matrix(coor_nth)
+    # coo_data = coo_matrix(data_nth)
+    # print ">> coo_coor"
+    # print coo_coor
+    # print ">> coo_data"
+    # print coo_data
+    # csr_matrix = hstack([coo_coor, coo_data])
+    # print type(csr_matrix)
+    # print csr_matrix
+    # print "dok_matrix"
+    # print dokmatrix
+
+    # csr_matrix = dokmatrix.tocsr()
+    # csr_matrix = sparse.csr_matrix((arr_data, arr_indeces, arr_indptr))
+    # csr_matrix = sparse.csr_matrix(data_nth, (x_nth, y_nth))
+    # csr_matrix = csr_matrix
+    return csrmatrix
