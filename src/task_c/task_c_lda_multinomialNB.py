@@ -1,15 +1,14 @@
 # https://link.springer.com/chapter/10.1007%2F978-3-642-13657-3_43
+from measurements import predict
 
 import numpy
 import lda
 import preprocessing
 import multinomial_nb
-
+import text_to_vector
 
 # --- get training data
 # train_b = preprocessing.get_data('train', 'B')
-from measurements import predict
-
 dataset = 'C'
 train_b = preprocessing.open_preprocess_file('train', dataset)
 
@@ -42,27 +41,27 @@ alpha = 'auto'  # or float number
 numpy.random.random(1)
 
 # --- preprocess
-tokens_arr, sents_arr = lda.preprocess(text)
+tokens_arr, sents_arr = preprocessing.preprocess(text)
 
 # --- init vectorizer
-vectorizer = lda.count_vectorizer()
+vectorizer = text_to_vector.count_vectorizer()
 # vectorizer = lda.tfidf_vectorizer()
 # vectorizer = lda.fit_to_vectorizer(vectorizer, sents_arr)
 
 # --- convert text into vectors using vectorizer
-bow_vectorizer = lda.fit_to_vectorizer(vectorizer, sents_arr)
+bow_vectorizer = text_to_vector.fit_to_vectorizer(vectorizer, sents_arr)
 # print ">> bow"
 # print bow_vectorizer
 
 # --- get feature names based on n-grams
-feature_names = lda.get_feature_names(vectorizer)
+feature_names = text_to_vector.get_feature_names(vectorizer)
 
 # --- convert dictionary to id2word
-idvec2word = lda.map_idvec2word(vectorizer)
+idvec2word = text_to_vector.map_idvec2word(vectorizer)
 dict_len = len(idvec2word)
 
 # --- convert bow vectorizer into bow lda
-bow_lda = lda.convert_to_lda_bow(bow_vectorizer)
+bow_lda = text_to_vector.convert_to_sparse_bow(bow_vectorizer)
 # print ">> bow lda"
 # print bow_lda
 
@@ -120,7 +119,7 @@ len_test = len(test_text)
 print "total test polarity"
 print test_polarity.value_counts()
 
-test_tokens, test_sents = lda.preprocess(test_text)
+test_tokens, test_sents = preprocessing.preprocess(test_text)
 topic_list = {}
 
 csr_matrix_test = lda.build_matrix_csr(vectorizer=vectorizer,

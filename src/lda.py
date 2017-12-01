@@ -1,45 +1,16 @@
 from scipy.sparse import coo_matrix, dok_matrix, hstack, vstack, csr_matrix
 from tqdm import tqdm
-from time import time
-from gensim import corpora, matutils
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.metrics import classification_report, f1_score, accuracy_score, confusion_matrix
+from gensim import corpora
+from text_to_vector import transform_text, get_feature_names, convert_to_sparse_bow
 
 import gensim
 import os
-import preprocessing
-import wordnet
-import numpy
-from pprint import pprint
-
-
-def preprocess(text):
-    join = " ".join
-    tokens = [preprocessing.extract_tokens(row) for row in tqdm(text)]
-    lemma = [wordnet.lemmatize_words(x) for x in tqdm(tokens)]
-
-    no_stopwords = []
-    no_stopwords_sent = []
-    for x in tqdm(lemma):
-        # print x
-        x = preprocessing.remove_stopwords(
-            preprocessing.get_tokens_only(x)
-        )
-        no_stopwords.append(x)
-        no_stopwords_sent.append(join(x))
-        # print x
-
-    return no_stopwords, no_stopwords_sent
-
-
-def map_idvec2word(vectorizer):
-    return {v: k for k, v in tqdm(vectorizer.vocabulary_.items())}
 
 
 def process_to_bow(vectorizer, lda_model, text):
     # print text
     # print type(text)
-    corpus = convert_to_lda_bow(transform_text(vectorizer, [text]))
+    corpus = convert_to_sparse_bow(transform_text(vectorizer, [text]))
     bow_list = [tup for tup in tqdm(list(lda_model[corpus]))]
 
     return bow_list
@@ -64,14 +35,6 @@ def process_to_get_topicno(lda_model, bow_topic, get='doc'):
         return sorted(phi_values, key=lambda tup: tup[1], reverse=True)[0][0]
 
 
-def convert_to_lda_bow(bow_vectorizer):
-    return matutils.Sparse2Corpus(bow_vectorizer, documents_columns=False)
-
-
-def get_feature_names(vectorizer):
-    return vectorizer.get_feature_names()
-
-
 def get_dictionary(text):
     # print text
     dictionary = corpora.Dictionary(text)
@@ -83,52 +46,9 @@ def load_dictionary(directory):
     return corpora.Dictionary.load(directory)
 
 
-def get_bow_representation(dictionary, text):
-    # convert dictionary into bag-of-words representation
-    word_bag = [dictionary.doc2bow(row) for row in text]
-    # print ">> type word bag"
-    # print type(word_bag)
-    return word_bag
-
-
 def load_lda_model(directory):
     if os.path.exists(directory):
         return gensim.models.LdaModel.load(directory)
-
-
-def count_vectorizer():
-    t0 = time()
-    tf_vectorizer = CountVectorizer(ngram_range=(1, 2),
-                                    # lowercase=True,
-                                    stop_words='english'
-                                    # vocabulary=[(k+1,v) for k,v in dictionary]
-                                    )
-
-    print("done in %0.6fs." % (time() - t0))
-
-    return tf_vectorizer
-
-
-def tfidf_vectorizer():
-    t0 = time()
-    tf_vectorizer = TfidfVectorizer(ngram_range=(1, 2),
-                                    # lowercase=True,
-                                    stop_words='english'
-                                    # vocabulary=dictionary
-
-                                    )
-
-    print("done in %0.3fs." % (time() - t0))
-
-    return tf_vectorizer
-
-
-def transform_text(vectorizer, text):
-    return vectorizer.transform(text)
-
-
-def fit_to_vectorizer(vectorizer, text):
-    return vectorizer.fit_transform(text)
 
 
 def build_lda_model(word_bag, dictionary, num_topics, alpha, passes):

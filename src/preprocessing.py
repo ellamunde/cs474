@@ -7,6 +7,7 @@ import os
 import enchant
 import HTMLParser
 import numpy as np
+import wordnet
 
 from joblib import Parallel, delayed
 from sklearn.model_selection import train_test_split
@@ -390,9 +391,29 @@ def filter_pmi(sets,th=0.9):
         print result
     return result
 
+
 def split_data(text, label, test_size=0.2, random_state=8):
     text_train, text_test, label_train, label_test = train_test_split(
         text, label, test_size=test_size, random_state=random_state
     )
 
     return text_train, text_test, label_train, label_test
+
+
+def preprocess(text):
+    join = " ".join
+    tokens = [extract_tokens(row) for row in tqdm(text)]
+    lemma = [wordnet.lemmatize_words(x) for x in tqdm(tokens)]
+
+    no_stopwords = []
+    no_stopwords_sent = []
+    for x in tqdm(lemma):
+        # print x
+        x = remove_stopwords(
+            get_tokens_only(x)
+        )
+        no_stopwords.append(x)
+        no_stopwords_sent.append(join(x))
+        # print x
+
+    return no_stopwords, no_stopwords_sent
