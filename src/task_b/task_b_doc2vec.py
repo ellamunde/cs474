@@ -3,7 +3,7 @@ from gensim.models import word2vec
 from gensim.models.doc2vec import Doc2Vec
 from pandas import DataFrame
 
-from text2tagdoc import LabeledLineSentence
+from doc2vec import LabeledLineSentence
 import matplotlib.pyplot as plt
 from sklearn import decomposition
 from sklearn.linear_model import LogisticRegression

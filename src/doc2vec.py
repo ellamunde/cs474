@@ -1,6 +1,7 @@
 # coding=utf-8
 from gensim.models import word2vec, Doc2Vec
 # from gensim.models import doc2vec
+from gensim.models.doc2vec import TaggedDocument
 from tqdm import tqdm
 
 import logging
@@ -71,3 +72,13 @@ def cosine_similarity(sentence1, sentence2):
 def prediction(model, test):
     for idx, row in test.itterows():
         model.most_similar()
+
+
+class LabeledLineSentence(object):
+    def __init__(self, text, label):
+        self.text = text
+        self.label = label
+
+    def __iter__(self):
+        for idx, doc in enumerate(self.text):
+            yield TaggedDocument(doc, [self.label[idx]])
