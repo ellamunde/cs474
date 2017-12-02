@@ -73,8 +73,6 @@ def build_matrix_csr(vectorizer, lda_model, topic_words_dist, topics, texts):
     # print idx_range
     len_text = len(topics)
 
-    x_nth = []
-    y_nth = []
     csrmatrix = None
 
     for i in tqdm(range(len_text)):

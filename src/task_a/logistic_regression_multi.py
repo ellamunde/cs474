@@ -8,7 +8,7 @@ def build_log_res_mode(train, label, C=100,multi_class='multinomial',solver='sag
     return model
 
 
-def split_and_train(matrix, polarity,multi_class=False):
+def split_and_train(matrix, polarity):
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity)
     print "total polarity split train"
     print pol_train.value_counts()
@@ -16,7 +16,6 @@ def split_and_train(matrix, polarity,multi_class=False):
     print pol_test.value_counts()
 
     # --- build svm model >> for polarity
-
     model = build_log_res_mode(text_train, pol_train)
 
     predict(text_test, pol_test, model)

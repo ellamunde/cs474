@@ -37,10 +37,13 @@ def get_root_dir():
     """
     getcwd = os.getcwd
     directory = getcwd()
+    basename = os.path.basename()
+    listdir = os.listdir
 
     while True:
-        path = os.path.basename(os.getcwd())
-        if path == "cs474":
+        # path = basename(getcwd())
+        folders = [basename(f) for f in listdir(getcwd())]
+        if 'src' in folders:
             return os.path.abspath(directory)
 
         os.chdir("..")
@@ -443,16 +446,16 @@ def get_words(txt):
             words.append(line)
     return words
  #######################lexicon#####################will standartize path later#####
-negative = open('./task_a/negative-words.txt').readlines()
-positive = open('./task_a/positive-words.txt').readlines()
 
-negative = get_words(negative)
-positive = get_words(positive)
 
 def add_polarity(tokens):
+    negative = open(get_root_dir() + '/src/task_a/negative-words.txt').readlines()
+    positive = open(get_root_dir() + '/src/task_a/positive-words.txt').readlines()
+
+    negative = get_words(negative)
+    positive = get_words(positive)
     result=[]
     for token,tag in tokens:
-        polarity=''
         dict={'pos':0,'neg':0,'neu':0}
         try:
             pol = swn.senti_synset('%s.%s.01' % (token, tag))
@@ -474,8 +477,9 @@ def add_polarity(tokens):
                 continue
         result.append((token,tag,polarity))
     return result
-def get_token_for_each_tweet(table):
 
+
+def get_token_for_each_tweet(table):
     tags = get_tags()
     token_list=[]
     pattern = r'%?[a-z]+'

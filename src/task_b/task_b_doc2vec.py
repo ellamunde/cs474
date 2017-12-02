@@ -62,21 +62,27 @@ for topic in topic_unique:
     #     print row['TEXT']
     group.append([line for line in data['TEXT']])
 
-print "group length: ", str(len(group))
-print group
+# print "group length: ", str(len(group))
+# print group
 
 # print sents_arr[0]
 sent_ids = ["sent_" + str(i) for i in range(len(sent_topic['TEXT']))]
 # sentences = LabeledLineSentence(sents_arr, sent_ids)
 # sent_ids = ["sent_" + str(i) for i in range(len(group))]
-print sent_ids
+# print sent_ids
 # sentences = LabeledLineSentence(group, topic_unique)
 # sentences = LabeledLineSentence(sent_topic['TEXT'], sent_topic['TOPIC'])
-sentences = LabeledLineSentence(sent_topic['TEXT'], sent_ids)
+sentences = list(LabeledLineSentence(sent_topic['TEXT'], sent_topic['TOPIC']))
+# print ">> sentencess"
+# print sentences
+# sentences
+# sentences = LabeledLineSentence(sent_topic['TEXT'], sent_ids)
+# sentences = LabeledLineSentence(sent_topic['TEXT'], sent_ids)
 # doc2vec_input = [sentences[id] for id in train_ids]
 # sentences = word2vec.LineSentence([s.encode('utf-8').split() for s in sents_arr],polarity)
 
 cores = multiprocessing.cpu_count()
+print ">> cores"
 print cores
 model_DM = Doc2Vec(size=400, window=8, min_count=1, sample=1e-4, negative=5, workers=cores,  dm=1, dm_concat=1, batch_words=10000)
 model_DBOW = Doc2Vec(size=400, window=8, min_count=1, sample=1e-4, negative=5, workers=cores, dm=0, batch_words=10000)
@@ -95,9 +101,9 @@ model_DBOW.build_vocab(sentences)
 #     model_DBOW.train(doc2vec_input, total_examples=num_train, epochs=3)
 
 # start training
-for epoch in range(200): #200
+for epoch in range(1): #200
     if epoch % 20 == 0:
-        print ('Now training epoch %s'%epoch)
+        print ('Now training epoch %s' % epoch)
     model_DM.train(sentences, total_examples=num_train, epochs=3)
     model_DM.alpha -= 0.002  # decrease the learning rate
     model_DM.min_alpha = model_DM.alpha  # fix the learning rate, no decay
@@ -107,39 +113,58 @@ for epoch in range(200): #200
 
 random.seed(1)
 
+# print doc2vec.get_word_distribution(model_DM, sentences[0])
+# print model_DM.wv.index2word
+# print len(model_DM.wv.index2word)
+# print model_DM.wv.vocab
+# dist = doc2vec.get_word_distribution(model_DM, topic_lables[0], topic=True)
+# print type(dist)
+# print model_DM.wv.
+# print model_DM.docvecs[topic_lables[0]]
+# print ">> syn"
+# print model_DM.wv.syn0
+# print ">> index2word"
+# print model_DM.wv.index2word
+# print ">> offset2docta"
+# print model_DM.docvecs.offset2docta
+
 #start testing
 #printing the vector of document at index 1 in docLabels
 # docvec = model_DM.docvecs[1]
-print model_DM.docvecs[1]
-print model_DBOW.docvecs[1]
+# print model_DM.docvecs[1]
+# print model_DBOW.docvecs[1]
 
 #printing the vector of the file using its name
-print model_DM.docvecs['sent_1'] #if string tag used in training
-print model_DBOW.docvecs['sent_1'] #if string tag used in training
+# print model_DM.docvecs['sent_1'] #if string tag used in training
+# print model_DBOW.docvecs['sent_1'] #if string tag used in training
 # print model_DM.docvecs[topic_unique[0]] #if string tag used in training
 # print model_DBOW.docvecs[topic_unique[0]] #if string tag used in training
 
 #to get most similar document with similarity scores using document-index
-print model_DM.docvecs.most_similar(1)
-print model_DBOW.docvecs.most_similar(1)
+# print model_DM.docvecs.most_similar(1)
+# print model_DBOW.docvecs.most_similar(1)
 
 #to get most similar document with similarity scores using document- name
-print model_DM.docvecs.most_similar('sent_1')
-print model_DBOW.docvecs.most_similar('sent_1')
+# print model_DM.docvecs.most_similar('sent_1')
+# print model_DBOW.docvecs.most_similar('sent_1')
 # print model_DM.docvecs.most_similar(topic_unique[0])
 # print model_DBOW.docvecs.most_similar(topic_unique[0])
 # print topic_unique[0]
+
+# print model_DBOW.sorted_vocab
+
 #to get vector of document that are not present in corpus
-# print model_DM.docvecs.infer_vector('x')
-# print model_DBOW.docvecs.infer_vector('x')
+# print model_DM.docvecs.infer_vector(['you, me, us'])
+# print model_DBOW.docvecs.infer_vector(['you, me, us'])
 
 # shows the similar words
-# print (model_DM.most_similar('aaron'))
-# print (model_DBOW.most_similar('aaron'))
+# print model_DM.most_similar('aaron')
+# print model_DBOW.most_similar('aaron')
+
 
 # shows the learnt embedding
-# print (model_DM['aaron'])
-# print (model_DBOW['aaron'])
+# print model_DM['aaron']
+# print model_DBOW['aaron']
 
 # shows the similar docs with id = 2
 # print ">> vocabulary"
@@ -156,9 +181,21 @@ print model_DBOW.docvecs.most_similar('sent_1')
 # load the doc2vec
 # model = gensim.models.Doc2Vec.load('save/trained.model')
 # docvecs = model.docvecs
-
-
 # print (docvecs[str(3)])
+# print model_DBOW.syn1
+# print model_DM.syn1
+
+# print model_DM.predict_output_word(sentences[0], topn=10)
+# print model_DBOW.predict_output_word(sentences[0], topn=10)
+
+
+def get_vector(model, word):
+    return model.syn0norm[model.vocab[word].index]
+
+
+# print get_vector(model_DM, 'aaron')
+# print get_vector(model_DBOW, 'aaron')
+
 
 def plot_words(w2v):
     words_np = []
@@ -181,6 +218,7 @@ def plot_words(w2v):
             plt.scatter(x, y)
             plt.annotate(words_label[index], xy=(x, y))
     plt.show()
+
 
 
 # newindex = random.sample(range(0,num_train),num_train)
