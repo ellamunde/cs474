@@ -475,7 +475,7 @@ def add_polarity(tokens):
                 polarity='neu'
             else:
                 #may be not include tokens with not recognized polarity?
-                continue
+                polarity='unknown'
         result.append((token,tag,polarity))
     return result
 
