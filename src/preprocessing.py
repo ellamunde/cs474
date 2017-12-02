@@ -37,7 +37,8 @@ def get_root_dir():
     """
     getcwd = os.getcwd
     directory = getcwd()
-    basename = os.path.basename()
+
+    basename = os.path.basename
     listdir = os.listdir
 
     while True:

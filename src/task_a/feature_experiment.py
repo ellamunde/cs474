@@ -16,9 +16,12 @@ train_a = preprocessing.open_preprocess_file('train', 'A')
 # tokens_arr, sents_arr = preprocessing.preprocess(text)
 # train_a = preprocessing.get_data(train, "A")
 
-pos_set=preprocessing.get_subset(train_a,'positive')[:500]
-neg_set=preprocessing.get_subset(train_a,'negative')[:500]
-neut_set=preprocessing.get_subset(train_a,'neutral')[:500]
+pos_set=preprocessing.get_subset(train_a,'positive')
+neg_set=preprocessing.get_subset(train_a,'negative')
+neut_set=preprocessing.get_subset(train_a,'neutral')
+# pos_set=preprocessing.get_subset(train_a,'positive')[:500]
+# neg_set=preprocessing.get_subset(train_a,'negative')[:500]
+# neut_set=preprocessing.get_subset(train_a,'neutral')[:500]
 train_a=pd.concat([pos_set,neg_set,neut_set])
 train_a=shuffle(train_a)
 
