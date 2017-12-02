@@ -505,10 +505,18 @@ def get_token_for_each_tweet(table):
             elif tag.startswith('V'):
                 t,tg=get_lemmas(token,'v')
                 new_tokens.append((t, tg))
+            else:
+                print token
+                print tag
 
         #tokens=set(get_tokens_only(tokens))
         new_tokens=add_polarity(new_tokens)
         if len(new_tokens)==0:
+            print new_tokens
+            # print txt
+            # print tokens
+            # print num_words
+            # print p
             continue
         token_list.append((new_tokens,num_words,p))
 

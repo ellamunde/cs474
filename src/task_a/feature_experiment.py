@@ -22,14 +22,15 @@ neut_set=preprocessing.get_subset(train_a,'neutral')
 # pos_set=preprocessing.get_subset(train_a,'positive')[:500]
 # neg_set=preprocessing.get_subset(train_a,'negative')[:500]
 # neut_set=preprocessing.get_subset(train_a,'neutral')[:500]
-train_a=pd.concat([pos_set,neg_set,neut_set])
+# train_a=pd.concat([pos_set,neg_set,neut_set])
 train_a=shuffle(train_a)
 
-# TODO: needs to replace this later...
 test_a=preprocessing.open_preprocess_file('test', 'A')
 tok_list=preprocessing.get_token_for_each_tweet(train_a)
 tok_list_test=preprocessing.get_token_for_each_tweet(test_a)
 #training
+print len(train_a['POLARITY'])
+print len(tok_list)
 X=[]
 Y=train_a['POLARITY']
 for i in tok_list:
@@ -41,6 +42,9 @@ for i in tok_list:
 
     X.append(vec)
 #clf=featureML.train_clf(X,Y)
+print len(X)
+print len(Y)
+
 print 'building model'
 clf=logres.split_and_train(X, Y)
 measurements.predict(X,Y,clf)
