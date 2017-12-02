@@ -14,6 +14,11 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from textblob import Word
 
+##########
+from nltk.corpus import sentiwordnet as swn
+from nltk.stem import WordNetLemmatizer
+wordnet_lemmatizer = WordNetLemmatizer()
+##########
 
 # import dictionary from enchant library
 en_dictionary = enchant.Dict("en_US")
@@ -419,3 +424,88 @@ def preprocess(text):
         # print x
 
     return no_stopwords, no_stopwords_sent
+
+
+
+
+####################################method with no bag of words#####################################
+def get_lemmas(token,tag):
+
+    token=wordnet_lemmatizer.lemmatize(token,tag)
+
+    return (token,tag)
+
+def get_words(txt):
+    words = []
+    for line in txt:
+        line = line.strip()
+        if line != '' and not line.startswith(';'):
+            words.append(line)
+    return words
+ #######################lexicon#####################will standartize path later#####
+negative = open('./negative-words.txt').readlines()
+positive = open('./positive-words.txt').readlines()
+
+negative = get_words(negative)
+positive = get_words(positive)
+
+def add_polarity(tokens):
+    result=[]
+    for token,tag in tokens:
+        polarity=''
+        dict={'pos':0,'neg':0,'neu':0}
+        try:
+            pol = swn.senti_synset('%s.%s.01' % (token, tag))
+            dict['pos']=pol.pos_score()
+            dict['neg']=pol.neg_score()
+            dict['neu']=pol.obj_score()
+            polarity=max(dict.keys(), key=(lambda k:dict[k]))
+        except:
+            #if not found check in lexicon
+            if token in negative:
+                polarity='neg'
+
+            elif token in positive:
+                polarity='pos'
+            elif token.startswith("%"):
+                polarity='neu'
+            else:
+                #may be not include tokens with not recognized polarity?
+                continue
+        result.append((token,tag,polarity))
+    return result
+def get_token_for_each_tweet(table):
+
+    tags = get_tags()
+    token_list=[]
+    pattern = r'%?[a-z]+'
+    tokenizer = nltk.RegexpTokenizer(pattern)
+    for i,values in table.iterrows():
+        txt=values['CLEANED']
+        p=values['POLARITY']
+        tokens = tokenizer.tokenize(txt)
+        tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in tags]
+        num_words=len(tokens)
+        new_tokens=[]
+        #change tag format to use with lemmatizer and senti wordnet
+        for token,tag in tokens:
+
+            if tag.startswith('J'):
+                new_tokens.append((token,'a'))
+            elif tag.startswith('N'):
+                t,tg=get_lemmas(token,'n')
+                new_tokens.append((t,tg))
+            elif tag.startswith('R'):
+                new_tokens.append((token,'r'))
+            elif tag.startswith('V'):
+                t,tg=get_lemmas(token,'v')
+                new_tokens.append((t, tg))
+
+        #tokens=set(get_tokens_only(tokens))
+        new_tokens=add_polarity(new_tokens)
+        if len(new_tokens)==0:
+            continue
+        token_list.append((new_tokens,num_words,p))
+
+    return token_list
+#####################################################################################################################################
