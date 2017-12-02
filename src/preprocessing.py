@@ -443,8 +443,8 @@ def get_words(txt):
             words.append(line)
     return words
  #######################lexicon#####################will standartize path later#####
-negative = open('./negative-words.txt').readlines()
-positive = open('./positive-words.txt').readlines()
+negative = open('./task_a/negative-words.txt').readlines()
+positive = open('./task_a/positive-words.txt').readlines()
 
 negative = get_words(negative)
 positive = get_words(positive)
