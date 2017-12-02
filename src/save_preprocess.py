@@ -26,11 +26,11 @@ def preprocess():
     # train_a = preprocessing.get_data('train', 'A')
     # save_preprocess(train_a, 'train', 'A')
 
-    train_b = preprocessing.get_data('train', 'B')
-    save_preprocess(train_b, 'train', 'B')
-
-    train_c = preprocessing.get_data('train', 'C')
-    save_preprocess(train_c, 'train', 'C')
+    # train_b = preprocessing.get_data('train', 'B')
+    # save_preprocess(train_b, 'train', 'B')
+    #
+    # train_c = preprocessing.get_data('train', 'C')
+    # save_preprocess(train_c, 'train', 'C')
 
     test_a = preprocessing.get_data('test', 'A')
     save_preprocess(test_a, 'test', 'A')
