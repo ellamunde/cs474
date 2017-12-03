@@ -1,17 +1,15 @@
-import features
+from task_a import features
 import preprocessing
-import numpy as np
 import measurements
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
 from preprocessing import split_data
 from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
 
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from tqdm import tqdm
+from sklearn.feature_extraction.text import CountVectorizer
+
+
 def build_pipeline_mode(train, label,classifier):
     pipeline = Pipeline([
         # Extract the subject & body

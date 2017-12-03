@@ -6,7 +6,6 @@ from sklearn.feature_extraction import DictVectorizer
 from preprocessing import split_data
 from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer
 import text_to_vector
 import lda
 
@@ -155,6 +154,7 @@ class ItemSelector(BaseEstimator, TransformerMixin):
 
     def transform(self, data_dict):
         return data_dict[self.key]
+
 
 class LdaParamValuesExtractor(BaseEstimator, TransformerMixin):
     """Extract the info necessary for lda & text stats from a dataframe in a single pass.

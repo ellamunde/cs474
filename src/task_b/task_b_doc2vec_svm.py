@@ -1,18 +1,13 @@
 # https://medium.com/@mishra.thedeepak/doc2vec-in-a-simple-way-fa80bfe81104
-from gensim.models import word2vec
-from gensim.models.doc2vec import Doc2Vec
 from pandas import DataFrame, concat
 from doc2vec import LabeledLineSentence
 from sklearn import decomposition
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix
 from measurements import predict
 # import statsmodels.api as sm
 import matplotlib.pyplot as plt
 import multiprocessing
 import doc2vec
 import preprocessing
-import text_to_vector
 import random
 import numpy as np
 import svm
@@ -23,8 +18,8 @@ import svm
 random.seed(1)
 dataset = 'B'
 # test_b = preprocessing.get_data(test, "B")
+# train_b = preprocessing.open_preprocess_file('train', dataset)
 train_b = preprocessing.open_preprocess_file('train', dataset)
-# train_b = preprocessing.open_preprocess_file('train', dataset)[:500]
 
 # --- get the lables, tweets, and polarities
 topic_lables = train_b['TOPIC']

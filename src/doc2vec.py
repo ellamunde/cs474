@@ -190,8 +190,10 @@ def build_matrix_csr(model, sentences, topics):
 
     return csrmatrix
 
+
 def join_tsp(topics, sentences, polarities):
     return topics.to_frame().reset_index(drop=True).join(DataFrame({'TEXT': sentences})).join(polarities.to_frame())
+
 
 class LabeledLineSentence(object):
     def __init__(self, text, label):

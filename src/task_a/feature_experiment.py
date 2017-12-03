@@ -1,7 +1,6 @@
 import preprocessing
 
-import features
-import pandas as pd
+from task_a import features
 import measurements
 import logistic_regression_multi as logres
 from sklearn.utils import shuffle
@@ -38,7 +37,7 @@ for i in tok_list:
     word_count=i[1]
     polarity=i[2]
     
-    vec=features.build_feature_vector(tokens,word_count)
+    vec= features.build_feature_vector(tokens, word_count)
 
     X.append(vec)
 #clf=featureML.train_clf(X,Y)
@@ -56,7 +55,7 @@ for i in tok_list_test:
     word_count=i[1]
     polarity=i[2]
 
-    vec=features.build_feature_vector(tokens,word_count)
+    vec= features.build_feature_vector(tokens, word_count)
 
     X_test.append(vec)
 
