@@ -24,7 +24,7 @@ def tuning_parameters(matrix, polarity):
     # Set the parameters by cross-validation
     tuned_parameters = [{'tol': [1e-3, 1e-4], 'solver': ['liblinear'],
                          'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
-                         'class_weight': [None, 'balanced']}]
+                         'class_weight': [None, 'balanced'], 'multi_class': ['multinomial']}]
 
     print "# Tuning hyper-parameters"
     print

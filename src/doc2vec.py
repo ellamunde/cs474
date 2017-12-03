@@ -1,11 +1,10 @@
 # coding=utf-8
 import multiprocessing
 
-from gensim.models import word2vec, Doc2Vec
+from gensim.models import Doc2Vec
 # from gensim.models import doc2vec
 from gensim.models.doc2vec import TaggedDocument
 from gensim.utils import simple_preprocess
-from pandas import DataFrame
 from scipy.sparse import csr_matrix, vstack
 from tqdm import tqdm
 
@@ -189,10 +188,6 @@ def build_matrix_csr(model, sentences, topics):
         # print csrmatrix.shape[0]
 
     return csrmatrix
-
-
-def join_tsp(topics, sentences, polarities):
-    return topics.to_frame().reset_index(drop=True).join(DataFrame({'TEXT': sentences})).join(polarities.to_frame())
 
 
 class LabeledLineSentence(object):

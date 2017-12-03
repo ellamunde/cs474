@@ -38,7 +38,6 @@ def build_pipeline_mode(train, label,classifier):
             # weight components in FeatureUnion
             transformer_weights={
                 'lda': 0.8,
-
                 'text_stats': 1.0,
             },
         )),
@@ -49,6 +48,7 @@ def build_pipeline_mode(train, label,classifier):
 
     model=pipeline.fit(train,label)
     return model
+
 
 #accepts dataframe
 def split_and_train(df,classifier):
@@ -86,13 +86,18 @@ class TextStats(BaseEstimator, TransformerMixin):
             dict = features.convert_to_dict(sample)
 
             X.append(dict)
+
+        print X
         return X
+
 
 class LdaVec(BaseEstimator, TransformerMixin):
     """Extract features from each document for DictVectorizer"""
 
     def fit(self, x, y=None):
         return self
+
+
     #accepts dictionary from lda param values extractor {text:text,num_topics:num_topics,topic_labels:topic_labels}
     def transform(self, lda_dict):
         text=lda_dict['text']
@@ -139,7 +144,9 @@ class LdaVec(BaseEstimator, TransformerMixin):
                                                 topics=topic_lables,
                                                 texts=text
                                                 )
-        return  csr_matrix_train
+        return csr_matrix_train
+
+
 class ItemSelector(BaseEstimator, TransformerMixin):
     """For data grouped by feature, select subset of data at a provided key.
 

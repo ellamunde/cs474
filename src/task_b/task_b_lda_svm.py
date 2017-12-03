@@ -1,9 +1,10 @@
 # https://link.springer.com/chapter/10.1007%2F978-3-642-13657-3_43
 import numpy
+from pandas import concat
+
 import lda
 import preprocessing
 import svm
-
 from pprint import pprint
 
 # --- get training data
@@ -30,14 +31,6 @@ print polarity.value_counts()
 # --- lda configurations
 passes = 20
 alpha = 'auto'  # or float number
-
-# --- directory for model and dictionary
-# dir_model = '{}{}_{}_{}_{}_{}'.format(os.getcwd(), "/model/lda_", str(num_train), str(num_topics), str(passes),
-#                                       str(alpha))
-# dir_model = os.path.abspath(dir_model)
-# dir_dict = '{}{}_{}_{}_{}_{}'.format(os.getcwd(), "/dictionary/lda_", str(num_train), str(num_topics), str(passes),
-#                                      str(alpha))
-# dir_dict = os.path.abspath(dir_dict)
 
 # --- state random
 numpy.random.random(1)
@@ -92,9 +85,20 @@ csr_matrix_train = lda.build_matrix_csr(vectorizer=vectorizer,
 # --- build svm model >> for polarity
 # svm_model = svm.train_svm(text_train, pol_train)
 # svm.predict(text_test, pol_test, svm_model)
+sent_topic = preprocessing.join_tsp(topic_lables, sents_arr, polarity)
+train_data = concat([sent_topic[sent_topic.POLARITY=='positive'], sent_topic[sent_topic.POLARITY=='negative']]).reset_index(drop=True)
+# svm_train_data_dm = doc2vec.build_matrix_csr(model=model_DM, sentences=train_data['TEXT'], topics=train_data['TOPIC'])
+# svm_train_data_dbow = doc2vec.build_matrix_csr(model=model_DBOW, sentences=train_data['TEXT'], topics=train_data['TOPIC'])
+svm_bow = text_to_vector.fit_to_vectorizer(vectorizer, sent_topic['POLARITY'])
+svm_train_matrix = lda.build_matrix_csr(vectorizer=vectorizer,
+                                        lda_model=lda_model,
+                                        topic_words_dist=topic_words_dist,
+                                        topics=topic_lables,
+                                        texts=sent_topic['POLARITY']
+                                        )
 
-train_model = svm.split_and_train(bow_vectorizer, polarity)
-train_model_lda = svm.split_and_train(csr_matrix_train, polarity)
+train_model = svm.split_and_train(svm_bow, sent_topic['POLARITY'])
+train_model_lda = svm.split_and_train(svm_train_matrix, sent_topic['POLARITY'])
 
 ## --- to get all the topics from lda
 # all_topics = lda_model.get_document_topics(bow=bow_lda, per_word_topics=True)
@@ -102,10 +106,6 @@ train_model_lda = svm.split_and_train(csr_matrix_train, polarity)
 ##################################################################################################################
 ################################################### EXPERIMENT ###################################################
 ##################################################################################################################
-
-# for i in range(len(topic_words_dist)):
-#     print i
-#     print topic_words_dist[i]
 
 # --- get training data
 test_set = preprocessing.open_preprocess_file('test', dataset)

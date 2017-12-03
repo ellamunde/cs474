@@ -7,6 +7,8 @@ import os
 import enchant
 import HTMLParser
 import numpy as np
+from pandas import DataFrame
+
 import wordnet
 
 from joblib import Parallel, delayed
@@ -521,3 +523,5 @@ def get_token_for_each_tweet(table):
 
     return token_list
 #####################################################################################################################################
+def join_tsp(topics, sentences, polarities):
+    return topics.to_frame().reset_index(drop=True).join(DataFrame({'TEXT': sentences})).join(polarities.to_frame())

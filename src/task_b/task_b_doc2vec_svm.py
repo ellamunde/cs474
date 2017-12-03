@@ -39,7 +39,7 @@ print polarity.value_counts()
 tokens_arr, sents_arr = preprocessing.preprocess(text)
 # print type(sents_arr)
 # sent_topic = topic_lables.to_frame().reset_index(drop=True).join(DataFrame({'TEXT': sents_arr}))
-sent_topic = doc2vec.join_tsp(topic_lables, sents_arr, polarity)
+sent_topic = preprocessing.join_tsp(topic_lables, sents_arr, polarity)
 sentences = list(LabeledLineSentence(sent_topic['TEXT'], sent_topic['TOPIC']))
 
 model_DM = doc2vec.build_doc2vec_model_dm()
@@ -85,7 +85,7 @@ print "total test polarity"
 print test_polarity.value_counts()
 
 test_tokens, test_sents = preprocessing.preprocess(test_set['CLEANED'])
-test_data = doc2vec.join_tsp(test_set['TOPIC'], test_sents, test_set['POLARITY'])
+test_data = preprocessing.join_tsp(test_set['TOPIC'], test_sents, test_set['POLARITY'])
 # test_data = test_data[test_data.POLARITY=='positive'] + test_data[test_data.POLARITY=='negative']
 test_data = concat([test_data[test_data.POLARITY=='positive'], test_data[test_data.POLARITY=='negative']]).reset_index(drop=True)
 
