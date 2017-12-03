@@ -249,6 +249,9 @@ def preprocess_tweet(txt):
                 r"\(?(?:(http|https|ftp):\/\/)?(?:((?:[^\W\s]|\.|-|[:]{1})+)@{1})?((?:www.)?(?:[^\W\s]|\.|-)+[\.][^\W\s]{2,4}|localhost(?=\/)|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d*))?([\/]?[^\s\?]*[\/]{1})*(?:\/?([^\s\n\?\[\]\{\}\#]*(?:(?=\.)){1}|[^\s\n\?\[\]\{\}\.\#]*)?([\.]{1}[^\s\?\#]*)?)?(?:\?{1}([^\s\n\#\[\]]*))?([\#][^\s\n]*)?\)?",
                 token):
             token = "@link"
+            
+        elif re.match(r'\!+', token):
+            token = "@exclamation"
         # ignore not-a-word token
         elif ismatch(r"[^A-Za-z]+", tag):
             continue
@@ -457,6 +460,7 @@ def add_polarity(tokens):
     positive = get_words(positive)
     result=[]
     for token,tag in tokens:
+        polarity=''
         dict={'pos':0,'neg':0,'neu':0}
         try:
             pol = swn.senti_synset('%s.%s.01' % (token, tag))
@@ -474,22 +478,25 @@ def add_polarity(tokens):
             elif token.startswith("%"):
                 polarity='neu'
             else:
-                #may be not include tokens with not recognized polarity?
-                polarity='unknown'
+                polarity='neu'
+                #continue
         result.append((token,tag,polarity))
+    if len(result)==0:
+        print tokens
     return result
 
 
+
 def get_token_for_each_tweet(table):
+    #manual check of modals and future tense
+    wd_list=['will','shall', 'll','could','might','may','would']
     tags = get_tags()
     token_list=[]
-    pattern = r'%?[a-z]+'
+    pattern = r'@?[a-z]+'
     tokenizer = nltk.RegexpTokenizer(pattern)
-    for i,values in table.iterrows():
-        txt=values['CLEANED']
-        p=values['POLARITY']
-        tokens = tokenizer.tokenize(txt)
-        tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in tags]
+    for i in table:
+        tokens = tokenizer.tokenize(i)
+        tokens = [(token, tag) for token, tag in nltk.pos_tag(tokens) if tag in tags or re.match('not',token) or token in wd_list]
         num_words=len(tokens)
         new_tokens=[]
         #change tag format to use with lemmatizer and senti wordnet
@@ -505,20 +512,12 @@ def get_token_for_each_tweet(table):
             elif tag.startswith('V'):
                 t,tg=get_lemmas(token,'v')
                 new_tokens.append((t, tg))
-            else:
-                print token
-                print tag
 
         #tokens=set(get_tokens_only(tokens))
         new_tokens=add_polarity(new_tokens)
         if len(new_tokens)==0:
-            print new_tokens
-            # print txt
-            # print tokens
-            # print num_words
-            # print p
             continue
-        token_list.append((new_tokens,num_words,p))
+        token_list.append((new_tokens,num_words))
 
     return token_list
 #####################################################################################################################################
