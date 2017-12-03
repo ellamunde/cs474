@@ -62,7 +62,7 @@ def split_and_train(df,classifier):
 
     # --- build svm model >> for polarity
 
-    model = build_pipeline_mode(df, pol_train,classifier)
+    model = build_pipeline_mode(text_train, pol_train,classifier)
 
     measurements.predict(text_test, pol_test, model)
     return model
