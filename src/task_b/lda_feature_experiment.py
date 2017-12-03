@@ -4,7 +4,7 @@ from measurements import predict
 import numpy
 import lda
 import preprocessing
-import logistic_regression_multi as logres
+import logistic_regression as logres
 import lda_pipeline
 
 dataset = 'B'
