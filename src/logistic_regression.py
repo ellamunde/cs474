@@ -2,6 +2,8 @@ from sklearn.linear_model import LogisticRegression
 from measurements import predict
 from preprocessing import split_data
 
+def initClassifier():
+    return LogisticRegression(C=100)
 
 def build_log_res_model(train, label, C=100):
     model = LogisticRegression(C=C).fit(train, label)
