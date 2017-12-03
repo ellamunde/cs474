@@ -2,6 +2,8 @@ from sklearn.linear_model import LogisticRegression
 from measurements import predict
 from preprocessing import split_data
 
+def initClassifier():
+    return LogisticRegression(C=100, multi_class='multinomial',solver='sag')
 
 def build_log_res_mode(train, label, C=100,multi_class='multinomial',solver='sag'):
     model = LogisticRegression(C=C, multi_class=multi_class,solver=solver).fit(train, label)
