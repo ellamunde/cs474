@@ -6,6 +6,10 @@ from preprocessing import split_data
 def build_multinomial_nb_model(train_vec, train_label, alpha=0.1):
     model = MultinomialNB(alpha=alpha)
     model.fit(train_vec, train_label)
+    print ">> -----------------------------"
+    print "Naive Bayes Multinoimial model specification:"
+    print ">> alpha: " + str(alpha)
+    print ">> -----------------------------"
     return model
 
 

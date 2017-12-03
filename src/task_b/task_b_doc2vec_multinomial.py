@@ -14,12 +14,16 @@ import preprocessing
 import text_to_vector
 import random
 import numpy as np
+import svm
 # import statsmodels.api as sm
 
 
 # test_b = preprocessing.get_data(test, "B")
+random.seed(1)
 dataset = 'B'
 train_b = preprocessing.open_preprocess_file('train', dataset)
+# train_b = preprocessing.open_preprocess_file('train', dataset)[:500]
+# TODO: delete this later
 
 # --- get the lables, tweets, and polarities
 topic_lables = train_b['TOPIC']
@@ -101,7 +105,7 @@ model_DBOW.build_vocab(sentences)
 #     model_DBOW.train(doc2vec_input, total_examples=num_train, epochs=3)
 
 # start training
-for epoch in range(1): #200
+for epoch in range(200): #200
     if epoch % 20 == 0:
         print ('Now training epoch %s' % epoch)
     model_DM.train(sentences, total_examples=num_train, epochs=3)
@@ -111,13 +115,27 @@ for epoch in range(1): #200
     model_DBOW.alpha -= 0.002  # decrease the learning rate
     model_DBOW.min_alpha = model_DM.alpha  # fix the learning rate, no decay
 
-random.seed(1)
 
+svm_train_data = doc2vec.build_matrix_csr(model=model_DM, sentences=sentences, topics=sent_topic['TOPIC'])
+print len(sentences)
+print len(polarity)
+print svm_train_data.shape[0]
+train_model = svm.split_and_train(svm_train_data, polarity)
+
+# svm_train_data = doc2vec.build_matrix_csr(model=model_DM, sentences=sent_topic['TEXT'], topics=sent_topic['TOPIC'])
+
+
+# dist = doc2vec.get_word_distribution(model_DM, topic_lables[0], topic=True)
+# testdata = preprocessing.open_preprocess_file('test', dataset)
+# test_tokens, test_sents = preprocessing.preprocess(testdata['CLEANED'])
+# testprocess = doc2vec.process_test_data(test_sents)
+
+# dist = doc2vec.get_word_distribution(model_DM, topic_lables[0], topic=True)
 # print doc2vec.get_word_distribution(model_DM, sentences[0])
 # print model_DM.wv.index2word
 # print len(model_DM.wv.index2word)
 # print model_DM.wv.vocab
-# dist = doc2vec.get_word_distribution(model_DM, topic_lables[0], topic=True)
+
 # print type(dist)
 # print model_DM.wv.
 # print model_DM.docvecs[topic_lables[0]]

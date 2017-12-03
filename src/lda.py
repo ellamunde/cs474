@@ -58,6 +58,13 @@ def build_lda_model(word_bag, dictionary, num_topics, alpha, passes):
                                                 passes=passes,
                                                 alpha=alpha
                                                 )
+    print ">> -----------------------------"
+    print "LDA model specification:"
+    print ">> num_topics: " + str(num_topics)
+    print ">> passes: " + str(passes)
+    print ">> alpha: " + str(alpha)
+    print ">> -----------------------------"
+
     return lda_model
 
 
@@ -80,14 +87,15 @@ def build_matrix_csr(vectorizer, lda_model, topic_words_dist, topics, texts):
 
         # print ">> topic"
         # print topics[i]
-        if topics[i] in topic_list.keys():
-            topicno = topic_list[topics[i]]
-        else:
+
+        if topics[i] not in topic_list.keys():
             bow_topic = process_to_bow(vectorizer, lda_model, topics[i])[0]
             topicno = sorted(bow_topic, key=lambda tup: tup[1], reverse=True)[0][0]
             # print ">> bow topic"
             # print bow_topic
             topic_list[topics[i]] = topicno
+
+        topicno = topic_list[topics[i]]
         # print ">> topic no"
         # print topicno
 

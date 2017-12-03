@@ -5,6 +5,10 @@ from preprocessing import split_data
 
 def build_log_res_model(train, label, C=100):
     model = LogisticRegression(C=C).fit(train, label)
+    print ">> -----------------------------"
+    print "Logistic Regression model specification:"
+    print ">> C: " + str(C)
+    print ">> -----------------------------"
     return model
 
 

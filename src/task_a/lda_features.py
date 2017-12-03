@@ -75,7 +75,7 @@ lda_model = lda.build_lda_model(word_bag=bow_lda,
                                 passes=passes
                                 )
 
-def get_features():
+def get_features(texts):
     """
     1.  number of words
     2.  probability of pos
@@ -94,7 +94,11 @@ def get_features():
     15. boolean future tense
     16. boolean has modal
     17. boolean has pronoun
-    18. boolean
+    18. array of positive word positions
+    19. array of negative word positions
+    20. has exclamation
+    21. has fullstop
+
     :return:
     """
     number_of_words=word_count
