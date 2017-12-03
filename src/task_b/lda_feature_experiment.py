@@ -16,4 +16,4 @@ alpha = 'auto'  # or float number
 
 # --- state random
 numpy.random.random(1)
-lda_pipeline.split_and_train(train_b, logres.initClassifier())
+lda_pipeline.split_and_train(train_b, logres.default_log_res())

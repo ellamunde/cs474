@@ -150,7 +150,7 @@ def get_word_distribution(model, text, topic=False):
     return sims
 
 
-def build_matrix_csr(model, sentences, topics):
+def build_matrix_csr(model, sentences, topics, mnb=False):
     topic_list = {}
 
     vocabulary = model.wv.index2word
@@ -177,7 +177,8 @@ def build_matrix_csr(model, sentences, topics):
             # print token
 
             if token in vocab_dict:
-                text_nth[vocab_dict[token]] += topic_list[topics[i]][token] if token in topic_list[topics[i]].keys() else 0
+                value = topic_list[topics[i]][token] if token in topic_list[topics[i]].keys() else 0
+                text_nth[vocab_dict[token]] += 0 if value < 0 and mnb else value
 
                 # print ">> changed"
                 # print text_nth[vocab_dict[token]]

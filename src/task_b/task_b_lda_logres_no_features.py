@@ -1,23 +1,25 @@
 import pre_task_bc_lda as pre
 
-input_from_file = pre.get_data('train', 'B')[:100]
+input_from_file = pre.get_data('train', 'B')
 lda_model, vectorizer, train_data, all_topics, topic_words_dist = pre.get_model(input_from_file)
-svm_polarity_model = pre.svm_polarity_model(lda_model, vectorizer, topic_words_dist, train_data)
-prediction = pre.svm_polarity_test(lda_model, svm_polarity_model, vectorizer, topic_words_dist)
+logres_polarity_model = pre.logres_polarity_model(lda_model, vectorizer, topic_words_dist, train_data, tuning=False)
+prediction = pre.logres_polarity_test(lda_model, logres_polarity_model, vectorizer, topic_words_dist)
+
+
 
 # # https://link.springer.com/chapter/10.1007%2F978-3-642-13657-3_43
+# import text_to_vector
+# from measurements import predict
 # import numpy
-# from pandas import concat
-#
 # import lda
 # import preprocessing
-# import svm
+# import logistic_regression as logres
+#
 # from pprint import pprint
 #
 # # --- get training data
 # # train_b = preprocessing.get_data('train', 'B')
-# import text_to_vector
-# from measurements import predict
+#
 #
 # dataset = 'B'
 # train_b = preprocessing.open_preprocess_file('train', dataset)
@@ -38,6 +40,14 @@ prediction = pre.svm_polarity_test(lda_model, svm_polarity_model, vectorizer, to
 # # --- lda configurations
 # passes = 20
 # alpha = 'auto'  # or float number
+#
+# # --- directory for model and dictionary
+# # dir_model = '{}{}_{}_{}_{}_{}'.format(os.getcwd(), "/model/lda_", str(num_train), str(num_topics), str(passes),
+# #                                       str(alpha))
+# # dir_model = os.path.abspath(dir_model)
+# # dir_dict = '{}{}_{}_{}_{}_{}'.format(os.getcwd(), "/dictionary/lda_", str(num_train), str(num_topics), str(passes),
+# #                                      str(alpha))
+# # dir_dict = os.path.abspath(dir_dict)
 #
 # # --- state random
 # numpy.random.random(1)
@@ -92,20 +102,9 @@ prediction = pre.svm_polarity_test(lda_model, svm_polarity_model, vectorizer, to
 # # --- build svm model >> for polarity
 # # svm_model = svm.train_svm(text_train, pol_train)
 # # svm.predict(text_test, pol_test, svm_model)
-# sent_topic = preprocessing.join_tsp(topic_lables, sents_arr, polarity)
-# train_data = concat([sent_topic[sent_topic.POLARITY=='positive'], sent_topic[sent_topic.POLARITY=='negative']]).reset_index(drop=True)
-# # svm_train_data_dm = doc2vec.build_matrix_csr(model=model_DM, sentences=train_data['TEXT'], topics=train_data['TOPIC'])
-# # svm_train_data_dbow = doc2vec.build_matrix_csr(model=model_DBOW, sentences=train_data['TEXT'], topics=train_data['TOPIC'])
-# # svm_bow = text_to_vector.fit_to_vectorizer(vectorizer, sent_topic['TEXT'])
-# svm_train_matrix = lda.build_matrix_csr(vectorizer=vectorizer,
-#                                         lda_model=lda_model,
-#                                         topic_words_dist=topic_words_dist,
-#                                         topics=topic_lables,
-#                                         texts=sent_topic['TEXT']
-#                                         )
 #
-# # train_model = svm.split_and_train(svm_bow, sent_topic['POLARITY'])
-# train_model_lda = svm.split_and_train(svm_train_matrix, sent_topic['POLARITY'])
+# # train_model = logres.split_and_train(bow_vectorizer, polarity)
+# train_model_lda = logres.split_and_train(csr_matrix_train, polarity)
 #
 # ## --- to get all the topics from lda
 # # all_topics = lda_model.get_document_topics(bow=bow_lda, per_word_topics=True)
@@ -114,29 +113,36 @@ prediction = pre.svm_polarity_test(lda_model, svm_polarity_model, vectorizer, to
 # ################################################### EXPERIMENT ###################################################
 # ##################################################################################################################
 #
+# # for i in range(len(topic_words_dist)):
+# #     print i
+# #     print topic_words_dist[i]
 #
 # # --- get training data
 # test_set = preprocessing.open_preprocess_file('test', dataset)
 #
 # # --- get the lables, tweets, and polarities
+# test_topics = test_set['TOPIC']
+# test_text = test_set['CLEANED']
 # test_polarity = test_set['POLARITY']
-# len_test = len(test_polarity)
+# len_test = len(test_text)
+# # print ">> topic"
+# # print len_test
+#
 # print "total test polarity"
 # print test_polarity.value_counts()
 #
-# sent_topic_test = preprocessing.join_tsp(test_set['TOPIC'], test_set['TEXT'], test_set['POLARITY'])
-# test_data = concat([sent_topic_test[sent_topic_test.POLARITY=='positive'], sent_topic_test[sent_topic_test.POLARITY=='negative']]).reset_index(drop=True)
+# test_tokens, test_sents = preprocessing.preprocess(test_text)
+# topic_list = {}
 #
-# test_tokens, test_sents = preprocessing.preprocess(test_data['TEXT'])
 # csr_matrix_test = lda.build_matrix_csr(vectorizer=vectorizer,
 #                                        lda_model=lda_model,
 #                                        topic_words_dist=topic_words_dist,
-#                                        topics=test_data['TOPIC'],
-#                                        texts=test_sents
+#                                        topics=test_topics,
+#                                        texts=test_text
 #                                        )
 # # print csr_matrix_test
 # # print csr_matrix_test.shape
 #
 # # --- build svm model >> for polarity
-# # prediction_res = predict(csr_matrix_test, test_data['POLARITY'], train_model)
-# prediction_res_lda = predict(csr_matrix_test, test_data['POLARITY'], train_model_lda)
+# # prediction_res = predict(csr_matrix_test, test_polarity, train_model)
+# prediction_res_lda = predict(csr_matrix_test, test_polarity, train_model_lda)

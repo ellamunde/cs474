@@ -1,4 +1,3 @@
-import optunity
 from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
@@ -30,6 +29,8 @@ def train_svm(train, label, class_weight, c=1000000.0, gamma='auto', kernel='rbf
     print ">> kernel: " + str(kernel)
     print ">> -----------------------------"
 
+    print svm_model.get_params(deep=True)
+
     return svm_model
 
 
@@ -38,13 +39,17 @@ def tuning_parameter(matrix, polarity):
     xx_train, xx_dev, yy_train, yy_dev = split_data(matrix, polarity, test_size=0.5)
 
     # Set the parameters by cross-validation
-    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
-                         'C': [1, 10, 100, 1000, 10000, 100000], 'class_weight': [None, 'balanced']},
-                        {'kernel': ['linear'], 'C': [1, 10, 100, 1000, 10000, 100000], 'class_weight': [None, 'balanced']}]
+    tuned_parameters = [{'kernel': ['rbf', 'linear'], 'gamma': [1e-3, 1e-4],
+                         'C': [1, 10, 100, 1000, 10000, 100000], 'class_weight': [None, 'balanced']}
+                        ]
+                        # {'kernel': ['linear'], 'C': [1, 10, 100, 1000, 10000, 100000], 'class_weight': [None, 'balanced']}]
 
     print "# Tuning hyper-parameters"
     print
-    clf = GridSearchCV(OneVsRestClassifier(SVC()), tuned_parameters, cv=5)
+    if len(set(polarity)) > 2:
+        clf = GridSearchCV(OneVsRestClassifier(SVC()), tuned_parameters, cv=5)
+    else:
+        clf = GridSearchCV((SVC()), tuned_parameters, cv=5)
     clf.fit(xx_train, yy_train)
     print "Best parameters set found on development set:"
     print clf.best_estimator_
@@ -54,7 +59,7 @@ def tuning_parameter(matrix, polarity):
     print "The model is trained on the full development set."
     print "The scores are computed on the full evaluation set."
     print
-    result = predict(xx_dev, yy_dev, clf)
+    predict(xx_dev, yy_dev, clf)
     return clf.best_estimator_.C, clf.best_estimator_.kernel, clf.best_estimator_.gamma, clf.best_estimator_.class_weight
 
     # scores = ['precision', 'recall']
@@ -88,6 +93,7 @@ def tuning_parameter(matrix, polarity):
 
 def split_and_train(matrix, polarity):
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
+
     print "total polarity split train"
     pol_train_pol = pol_train.value_counts()
     print pol_train_pol
@@ -120,9 +126,13 @@ def split_and_train(matrix, polarity):
     # Standarize features
     scaler = StandardScaler(with_mean=False)
     text_train_std = scaler.fit_transform(text_train)
-    # text_train_std = text_train
+    text_train_std = text_train
 
+
+    # par_c, par_kernel, par_gamma, par_c_weight = tuning_parameter(text_train_std, pol_train)
     par_c, par_kernel, par_gamma, par_c_weight = tuning_parameter(text_train_std, pol_train)
+
+    xx_train, xx_dev, yy_train, yy_dev = split_data(text_train, text_train, test_size=0.5)
     svm_model = train_svm(text_train_std,
                           pol_train,
                           class_weight=par_c_weight,
