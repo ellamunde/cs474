@@ -12,7 +12,7 @@ import lda
 
 def build_pipeline_mode(train, label,classifier):
 
-    pipeline = Pipeline([
+     pipeline = Pipeline([
         # Extract the parameters for lda and feature
         ('ldaextractor', LdaParamValuesExtractor()),
 
@@ -28,7 +28,7 @@ def build_pipeline_mode(train, label,classifier):
 
                 # Pipeline for pulling ad hoc features from post's body
                 ('text_stats', Pipeline([
-                    ('selector', ItemSelector(key='text_stats')),
+                    ('selector', ItemSelector(key='text_stat')),
                     ('stats', TextStats()),  # returns a list of dicts
                     ('vect', DictVectorizer()),  # list of dicts -> feature matrix
                 ])),
@@ -38,7 +38,8 @@ def build_pipeline_mode(train, label,classifier):
             # weight components in FeatureUnion
             transformer_weights={
                 'lda': 0.8,
-                'text_stats': 1.0,
+
+                'text_stat': 1.0,
             },
         )),
 
@@ -49,11 +50,9 @@ def build_pipeline_mode(train, label,classifier):
     model=pipeline.fit(train,label)
     return model
 
-
 #accepts dataframe
-def split_and_train(df,classifier):
-    polarity=df['POLARITY']
-    text_train, text_test, pol_train, pol_test = split_data(df, polarity)
+def split_and_train(matrix,polarity,classifier):
+    text_train, text_test, pol_train, pol_test = split_data(matrix, polarity)
     print "total polarity split train"
     print pol_train.value_counts()
     print "total polarity split test"
@@ -71,6 +70,7 @@ class TextStats(BaseEstimator, TransformerMixin):
     """Extract features from each document for DictVectorizer"""
 
     def fit(self, x, y=None):
+
         return self
 
     def transform(self, posts):
@@ -86,23 +86,15 @@ class TextStats(BaseEstimator, TransformerMixin):
             dict = features.convert_to_dict(sample)
 
             X.append(dict)
-
-        print X
         return X
-
 
 class LdaVec(BaseEstimator, TransformerMixin):
     """Extract features from each document for DictVectorizer"""
 
     def fit(self, x, y=None):
-        return self
-
-
-    #accepts dictionary from lda param values extractor {text:text,num_topics:num_topics,topic_labels:topic_labels}
-    def transform(self, lda_dict):
-        text=lda_dict['text']
-        num_topics=lda_dict['num_topics']
-        topic_lables=lda_dict['topic_labels']
+        text = x['text']
+        num_topics = x['num_topics']
+        topic_lables = x['topic_labels']
         tokens_arr, sents_arr = preprocessing.preprocess(text)
 
         # --- init vectorizer
@@ -116,7 +108,7 @@ class LdaVec(BaseEstimator, TransformerMixin):
         # print bow_vectorizer
 
         # --- get feature names based on n-grams
-        feature_names = text_to_vector.get_feature_names(vectorizer)
+        # feature_names = text_to_vector.get_feature_names(vectorizer)
 
         # --- convert dictionary to id2word
         idvec2word = text_to_vector.map_idvec2word(vectorizer)
@@ -134,19 +126,26 @@ class LdaVec(BaseEstimator, TransformerMixin):
                                         alpha='auto',
                                         passes=20
                                         )
-
-        # --- get words distribution in for every topic
         topic_words_dist = lda.get_words_topic(lda_model, num_topics, dict_len)
-
+        self.model=lda_model
+        self.vectorizer=vectorizer
+        self.topic_words_dist=topic_words_dist
+        return self
+    #accepts dictionary from lda param values extractor {text:text,num_topics:num_topics,topic_labels:topic_labels}
+    def transform(self,lda_dict):
+        lda_model=self.model
+        # --- get words distribution in for every topic
+        vectorizer=self.vectorizer
+        topic_words_dist=self.topic_words_dist
+        topic_lables=lda_dict['topic_labels']
+        text=lda_dict['text']
         csr_matrix_train = lda.build_matrix_csr(vectorizer=vectorizer,
                                                 lda_model=lda_model,
                                                 topic_words_dist=topic_words_dist,
                                                 topics=topic_lables,
                                                 texts=text
                                                 )
-        return csr_matrix_train
-
-
+        return  csr_matrix_train
 class ItemSelector(BaseEstimator, TransformerMixin):
     """For data grouped by feature, select subset of data at a provided key.
 
@@ -162,23 +161,27 @@ class ItemSelector(BaseEstimator, TransformerMixin):
     def transform(self, data_dict):
         return data_dict[self.key]
 
-
 class LdaParamValuesExtractor(BaseEstimator, TransformerMixin):
     """Extract the info necessary for lda & text stats from a dataframe in a single pass.
 
     Takes a sequence of strings and produces a dict of sequences.  Keys are
     `lda` and `text_stat`.
     """
-    #accept dataframe
+    #accept array[[text,topic]]
     def fit(self, x, y=None):
         return self
 
-    def transform(self, df):
+    def transform(self, matrix):
         # --- get the lables, tweets, and polarities
-        topic_lables = df['TOPIC']
-        text = df['CLEANED']
 
+        topic_lables = []
+        text = []
+        for r in matrix:
+            topic_lables.append(r[1])
+            text.append(r[0])
         # --- get total of training instances and topics
+        topic_lables=pd.Series(topic_lables)
+        text=pd.Series(text)
         num_topics = len(topic_lables.value_counts())
         #create a dictionary to pass to lda
         dic_lda={'text': text, 'topic_labels':topic_lables,'num_topics':num_topics}
