@@ -34,27 +34,27 @@ def train_svm(train, label, class_weight, c=1000000.0, gamma='auto', kernel='rbf
     return svm_model
 
 
-def tuning_parameter(matrix, polarity):
+def tuning_parameter(matrix, polarity, multi=True):
     # Split the dataset in two equal parts
     # xx_train, xx_dev, yy_train, yy_dev = split_data(matrix, polarity, test_size=0.5)
 
     # Set the parameters by cross-validation
     print "# Tuning hyper-parameters"
     print
-    if isinstance(polarity[0], basestring):
+    if not multi:
         tuned_parameters = [{'kernel': ['rbf', 'linear'],
                              'gamma': [1e-3, 1e-4],
                              'C': [1, 10, 100, 1000, 10000, 100000],
                              'class_weight': [None, 'balanced']
                              }]
-        clf = GridSearchCV((SVC()), tuned_parameters, cv=5)
+        clf = GridSearchCV((SVC()), tuned_parameters, cv=5, scoring="precision_macro")
     else:
         tuned_parameters = [{'estimator__kernel': ['rbf', 'linear'],
                              'estimator__gamma': [1e-3, 1e-4],
                              'estimator__C': [1, 10, 100, 1000, 10000, 100000],
                              'estimator__class_weight': [None, 'balanced']
                              }]
-        clf = GridSearchCV(OneVsRestClassifier(SVC()), tuned_parameters, cv=5)
+        clf = GridSearchCV(OneVsRestClassifier(SVC()), tuned_parameters, cv=5, scoring="precision_macro")
     clf.fit(matrix, polarity)
 
     print "Best parameters set found on development set:"
@@ -104,7 +104,7 @@ def tuning_parameter(matrix, polarity):
     #     predict(X_test, y_test, clf)
 
 
-def split_and_train(matrix, polarity):
+def split_and_train(matrix, polarity, multi=True):
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.5)
 
     print "total polarity split train"
@@ -156,7 +156,7 @@ def split_and_train(matrix, polarity):
     # print svm_model.classes_
     # print svm_model.n_classes_
 
-    svm_model = tuning_parameter(text_train_std, pol_train)
+    svm_model = tuning_parameter(text_train_std, pol_train, multi)
     print svm_model.get_params(deep=True)
     predict(text_test, pol_test, svm_model)
     return svm_model

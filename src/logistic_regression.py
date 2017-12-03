@@ -30,12 +30,14 @@ def build_log_res_model(train, label, c=100, solver='liblinear', tol=None, multi
                                   fit_intercept=fit_intercept).fit(train, label)
 
 
-def tuning_parameters(matrix, polarity):
+def tuning_parameters(matrix, polarity, multi=True):
     # Split the dataset in two equal parts
     # xx_train, xx_dev, yy_train, yy_dev = split_data(matrix, polarity, test_size=0.5)
 
     # Set the parameters by cross-validation
-    if isinstance(polarity[0], basestring):
+    # if isinstance(polarity[0], basestring):
+    # print polarity.iloc[0]
+    if not multi:
         tuned_parameters = [{'tol': [1e-3, 1e-4], 'solver': ['liblinear'],
                              'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
                              'class_weight': [None, 'balanced']}]
@@ -46,7 +48,7 @@ def tuning_parameters(matrix, polarity):
 
     print "# Tuning hyper-parameters"
     print
-    clf = GridSearchCV(LogisticRegression(), tuned_parameters, cv=5)
+    clf = GridSearchCV(LogisticRegression(), tuned_parameters, cv=5, scoring="precision_macro")
     clf.fit(matrix, polarity)
     print "Best parameters set found on development set:"
     print clf.best_estimator_
@@ -62,7 +64,7 @@ def tuning_parameters(matrix, polarity):
     return clf
 
 
-def split_and_train(matrix, polarity, tuning=True):
+def split_and_train(matrix, polarity, tuning=True, multi=True):
     # print matrix
     # print polarity
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.5)
@@ -70,6 +72,8 @@ def split_and_train(matrix, polarity, tuning=True):
     print pol_train.value_counts()
     print "total polarity split test"
     print pol_test.value_counts()
+    # print type(pol_train)
+    # print type(text_train)
 
     # Standarize features
     scaler = StandardScaler(with_mean=False)
@@ -83,7 +87,7 @@ def split_and_train(matrix, polarity, tuning=True):
     # else:
     #     model = default_log_res()
     if tuning:
-        model = tuning_parameters(text_train, pol_train)
+        model = tuning_parameters(text_train, pol_train, multi=multi)
     else:
         model = default_log_res()
     print model.get_params(deep=True)

@@ -113,7 +113,7 @@ def make_lda_test(lda_model, vectorizer, topic_words_dist, dataset='B'):
     return csr_matrix_test, sent_topic_test
 
 
-def svm_polarity_model(lda_model, vectorizer, topic_words_dist, traindata):
+def svm_polarity_model(lda_model, vectorizer, topic_words_dist, traindata, multi):
     # --- get words distribution in for every topic
     svm_train_matrix = make_lda_train(vectorizer=vectorizer,
                                       lda_model=lda_model,
@@ -122,7 +122,7 @@ def svm_polarity_model(lda_model, vectorizer, topic_words_dist, traindata):
                                       )
 
     # train_model = svm.split_and_train(svm_bow, sent_topic['POLARITY'])
-    svm_pol_model = svm.split_and_train(svm_train_matrix, traindata['POLARITY'])
+    svm_pol_model = svm.split_and_train(svm_train_matrix, traindata['POLARITY'], multi=multi)
     return svm_pol_model
 
 
@@ -134,7 +134,7 @@ def svm_polarity_test(lda_model, svm_model, vectorizer, topic_words_dist, datase
     return prediction
 
 
-def logres_polarity_model(lda_model, vectorizer, topic_words_dist, traindata, tuning=True):
+def logres_polarity_model(lda_model, vectorizer, topic_words_dist, traindata, multi, tuning=True,):
     # --- get words distribution in for every topic
     logres_train_matrix = make_lda_train(vectorizer=vectorizer,
                                       lda_model=lda_model,
@@ -142,7 +142,7 @@ def logres_polarity_model(lda_model, vectorizer, topic_words_dist, traindata, tu
                                       train_data=traindata
                                       )
 
-    pol_model = logres.split_and_train(logres_train_matrix, traindata['POLARITY'], tuning=tuning)
+    pol_model = logres.split_and_train(logres_train_matrix, traindata['POLARITY'], tuning=tuning, multi=multi)
     return pol_model
 
 
@@ -152,7 +152,7 @@ def logres_polarity_test(lda_model, logres_model, vectorizer, topic_words_dist, 
     return prediction
 
 
-def multinomial_nb_polarity_model(lda_model, vectorizer, topic_words_dist, traindata):
+def multinomial_nb_polarity_model(lda_model, vectorizer, topic_words_dist, traindata, multi):
     # --- get words distribution in for every topic
     svm_train_matrix = make_lda_train(vectorizer=vectorizer,
                                       lda_model=lda_model,
@@ -161,7 +161,7 @@ def multinomial_nb_polarity_model(lda_model, vectorizer, topic_words_dist, train
                                       )
 
     # train_model = svm.split_and_train(svm_bow, sent_topic['POLARITY'])
-    mnb_pol_model = mnb.split_and_train(svm_train_matrix, traindata['POLARITY'])
+    mnb_pol_model = mnb.split_and_train(svm_train_matrix, traindata['POLARITY'], multi=multi)
     return mnb_pol_model
 
 

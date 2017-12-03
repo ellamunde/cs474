@@ -4,8 +4,8 @@ input_from_file = pre.get_data('train', 'B')[:100]
 epoch = 3
 model_dm, model_dbow, train_data = pre.get_model(input_from_file, epoch=epoch)
 
-dm_svm_model = pre.mnb_polarity_model(model=model_dm,train_data=train_data)
-dbow_svm_model = pre.mnb_polarity_model(model=model_dbow,train_data=train_data)
+dm_svm_model = pre.mnb_polarity_model(model=model_dm,train_data=train_data, multi=False)
+dbow_svm_model = pre.mnb_polarity_model(model=model_dbow,train_data=train_data, multi=False)
 
 print ">> dm, svm-dm"
 dm_prediction = pre.svm_polarity_test(model_dm, dm_svm_model, dataset='B')

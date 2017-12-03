@@ -99,11 +99,11 @@ def make_doc2vec_test(d2v_model, dataset='B', mnb=False):
     return csr_matrix_test, test_data
 
 
-def svm_polarity_model(model, train_data):
+def svm_polarity_model(model, train_data, multi):
     svm_train_data = doc2vec.build_matrix_csr(model=model, sentences=train_data['TEXT'],
                                                  topics=train_data['TOPIC'])
 
-    training_model = svm.split_and_train(svm_train_data, train_data['POLARITY'])
+    training_model = svm.split_and_train(svm_train_data, train_data['POLARITY'], multi=multi)
     return training_model
 
 
@@ -114,11 +114,11 @@ def svm_polarity_test(d2v_model, svm_model, dataset='B'):
     return prediction
 
 
-def logres_polarity_model(model, train_data):
+def logres_polarity_model(model, train_data, multi):
     logres_train_data = doc2vec.build_matrix_csr(model=model, sentences=train_data['TEXT'],
                                                  topics=train_data['TOPIC'])
 
-    training_model = logres.split_and_train(logres_train_data, train_data['POLARITY'])
+    training_model = logres.split_and_train(logres_train_data, train_data['POLARITY'], multi=multi)
     return training_model
 
 
@@ -129,12 +129,12 @@ def logres_polarity_test(d2v_model, logres_model, dataset='B'):
     return prediction
 
 
-def mnb_polarity_model(model, train_data):
+def mnb_polarity_model(model, train_data, multi):
     mnb_train_data = doc2vec.build_matrix_csr(model=model, sentences=train_data['TEXT'],
                                                  topics=train_data['TOPIC'], mnb=True)
 
     # print train_data
-    training_model = mnb.split_and_train(mnb_train_data, train_data['POLARITY'])
+    training_model = mnb.split_and_train(mnb_train_data, train_data['POLARITY'], multi=multi)
     return training_model
 
 
