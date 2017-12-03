@@ -18,6 +18,7 @@ def get_data(filetype='train', dataset='B'):
 
 
 def get_model(raw_data, epoch=200):
+    # print raw_data
     random.seed(1)
 
     # --- get the lables, tweets, and polarities
@@ -66,7 +67,11 @@ def get_model(raw_data, epoch=200):
         model_DBOW.alpha -= 0.002  # decrease the learning rate
         model_DBOW.min_alpha = model_DM.alpha  # fix the learning rate, no decay
 
-    if len(set(polarity)) < 5:
+    # print ">> polarity"
+    # print set(polarity)
+    # print len(set(polarity))
+    # if len(set(polarity[0])) < 3:
+    if isinstance(polarity[0], basestring):
         train_data = concat(
             [train_data[train_data.POLARITY == 'positive'], train_data[train_data.POLARITY == 'negative']]).reset_index(
             drop=True)
@@ -85,7 +90,7 @@ def make_doc2vec_test(d2v_model, dataset='B', mnb=False):
     test_tokens, test_sents = preprocessing.preprocess(test_set['CLEANED'])
     test_data = preprocessing.join_tsp(test_set['TOPIC'], test_sents, test_set['POLARITY'])
 
-    if len(set(test_data['POLARITY'])) < 5:
+    if isinstance(test_data['POLARITY'][0], basestring):
         test_data = concat(
             [test_data[test_data.POLARITY == 'positive'], test_data[test_data.POLARITY == 'negative']]).reset_index(
             drop=True)

@@ -66,7 +66,7 @@ def get_model(raw_data, passes=20, alpha='auto'):
 
     train_data = preprocessing.join_tsp(raw_data['TOPIC'], sents_arr, raw_data['POLARITY'])
 
-    if len(set(polarity)) < 5:
+    if isinstance(polarity[0], basestring):
         train_data = concat(
             [train_data[train_data.POLARITY == 'positive'], train_data[train_data.POLARITY == 'negative']]).reset_index(
             drop=True)
@@ -96,7 +96,7 @@ def make_lda_test(lda_model, vectorizer, topic_words_dist, dataset='B'):
     print "total test polarity"
     print test_set['POLARITY'].value_counts()
 
-    if len(set(test_set['POLARITY'])) < 5:
+    if isinstance(test_set['POLARITY'][0], basestring):
         test_set = concat([test_set[test_set.POLARITY == 'positive'],
                             test_set[test_set.POLARITY == 'negative']]).reset_index(drop=True)
 

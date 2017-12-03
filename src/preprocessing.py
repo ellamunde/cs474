@@ -106,7 +106,7 @@ def open_preprocess_file(data="train", task="A"):
             # tweet polarity
             appendtopics(line[3])
             # tweet polarity
-            t_polarity = line[4]
+            t_polarity =  int(line[4]) if task == 'C' else line[4]
         # for task B and C
         else:
             # tweet polarity

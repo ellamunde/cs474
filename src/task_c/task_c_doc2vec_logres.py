@@ -1,6 +1,6 @@
 import pre_task_bc_doc2vec as pre
 
-input_from_file = pre.get_data('train', 'C')[:100]
+input_from_file = pre.get_data('train', 'C')[:200]
 epoch = 3
 model_dm, model_dbow, train_data = pre.get_model(input_from_file, epoch=epoch)
 # print train_data
