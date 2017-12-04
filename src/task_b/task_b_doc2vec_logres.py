@@ -1,7 +1,7 @@
 import pre_task_bc_doc2vec as pre
 
 dataset = 'B'
-input_from_file = pre.get_data('train', dataset)[:100]
+input_from_file = pre.get_data('train', dataset)[:50]
 test_set = pre.get_data('test', dataset)[:100]
 
 epoch = 3

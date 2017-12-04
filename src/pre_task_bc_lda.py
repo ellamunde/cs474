@@ -65,13 +65,14 @@ def get_model(raw_data, passes=20, alpha='auto'):
                                     )
 
     train_data = preprocessing.join_tsp(raw_data['TOPIC'], sents_arr, raw_data['POLARITY'])
-    lda.assign_topic_to_ldatopic(vectorizer, lda_model, train_data)
-    # topic_words_dist = lda.get_words_topic(lda_model,
-    #                                        len(raw_data['TOPIC'].value_counts()),
-    #                                        len(text_to_vector.map_idvec2word(vectorizer))
-    #                                        )
-    #
-    # return lda_model, vectorizer, train_data, all_topics, topic_words_dist
+    topic_ids = lda.assign_topic_to_ldatopic(vectorizer, lda_model, train_data)
+    topn = dict_len
+    topic_words_dist = lda.get_words_topic(lda_model,
+                                           topic_ids,
+                                           topn
+                                           )
+
+    return lda_model, vectorizer, train_data, all_topics, topic_words_dist
 
 
 def make_lda_train(lda_model, vectorizer, topic_words_dist, train_data):
