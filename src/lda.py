@@ -26,8 +26,10 @@ def process_to_bow(vectorizer, lda_model, text):
 
 def get_words_topic(lda_model, topics, topn):
     topic_words = []
-    sorted_topics = sorted(topics, key=lambda tup: tup[1])
-    print sorted_topics
+    # print topics
+    sorted_topics = sorted(topics.items(), key=lambda x:x[1])
+    # print topics
+    # print sorted_topics
 
     for k, v in sorted_topics:
         topic_words.append(dict(lda_model.show_topic(topicid=v, topn=topn)))
@@ -133,11 +135,12 @@ def assign_topic_to_ldatopic(vectorizer, lda_model, data, by_count=True):
     # print total_prob
 
     for i in range(lda_model.num_topics):
-        print "topic: " + str(i)
+        # print "topic: " + str(i)
         rank = list()
         for j in total_prob.keys():
             rank.append((j, total_prob[j][i]))
 
+        # print rank
         rank = sorted(rank, key=lambda tup: tup[1], reverse=True)
         # print rank
         for r in rank:
@@ -146,7 +149,7 @@ def assign_topic_to_ldatopic(vectorizer, lda_model, data, by_count=True):
                 final_topicids[r[0]] = i
                 break
 
-    print final_topicids
+    # print final_topicids
     # for t in topic_ids_prob.keys():
     #     topic_ids_prob[t] = {k: topic_ids_prob[t][k]/(topic_ids_count[t][k] * 1.0) for k in topic_ids_prob[t].keys()}
     #
@@ -218,7 +221,7 @@ def get_list_topics_related(vectorizer, lda_model, data):
                 matrix_prob[topics[idx]] = [0.0] * lda_model.num_topics
 
             matrix_prob[topics[idx]][x[0]] += x[1]
-        print matrix_prob[topics[idx]]
+        # print matrix_prob[topics[idx]]
 
         # most_sim = most_sim[0]
         #
