@@ -14,4 +14,4 @@ train_b = preprocessing.open_preprocess_file('train', dataset)[:100]
 matrix=train_b[['CLEANED','TOPIC']].values
 polarity=train_b['POLARITY']
 
-lda_pipeline.split_and_train(matrix,polarity,logres.initClassifier())
+lda_pipeline.split_and_train(matrix,polarity,logres.default_log_res())

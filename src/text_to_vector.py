@@ -4,11 +4,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from tqdm import tqdm
 
 
-def count_vectorizer():
+def count_vectorizer(max_features=400):
     t0 = time()
     tf_vectorizer = CountVectorizer(ngram_range=(1, 2),
                                     # lowercase=True,
-                                    stop_words='english'
+                                    stop_words='english',
+                                    max_features=max_features
                                     # vocabulary=[(k+1,v) for k,v in dictionary]
                                     )
 

@@ -72,20 +72,20 @@ def get_model(raw_data, passes=20, alpha='auto'):
                                            topn
                                            )
 
-    return lda_model, vectorizer, train_data, all_topics, topic_words_dist
+    return lda_model, vectorizer, train_data, all_topics, topic_words_dist, topic_ids
 
 
-def make_lda_train(lda_model, vectorizer, topic_words_dist, train_data):
+def make_lda_train(lda_model, vectorizer, topic_words_dist, train_data, topic_ids):
     train_matrix = lda.build_matrix_csr(vectorizer=vectorizer,
                                             lda_model=lda_model,
                                             topic_words_dist=topic_words_dist,
-                                            topics=train_data['TOPIC'],
-                                            texts=train_data['TEXT']
+                                            map_topic_id=topic_ids,
+                                            dataset=train_data
                                             )
     return train_matrix
 
 
-def make_lda_test(lda_model, vectorizer, topic_words_dist, test_set):
+def make_lda_test(lda_model, vectorizer, topic_words_dist, test_set, topic_ids):
     # --- get the lables, tweets, and polarities
     print "total test polarity"
     print test_set['POLARITY'].value_counts()
@@ -96,18 +96,18 @@ def make_lda_test(lda_model, vectorizer, topic_words_dist, test_set):
 
     # print test_data
     test_tokens, test_sents = preprocessing.preprocess(test_set['CLEANED'])
-    sent_topic_test = preprocessing.join_tsp(test_set['TOPIC'], test_sents, test_set['POLARITY'])
+    test_set = preprocessing.join_tsp(test_set['TOPIC'], test_sents, test_set['POLARITY'])
 
     csr_matrix_test = lda.build_matrix_csr(vectorizer=vectorizer,
                                            lda_model=lda_model,
                                            topic_words_dist=topic_words_dist,
-                                           topics=sent_topic_test['TOPIC'],
-                                           texts=sent_topic_test['TEXT']
+                                           map_topic_id=topic_ids,
+                                           dataset=test_set
                                            )
-    return csr_matrix_test, sent_topic_test
+    return csr_matrix_test, test_set
 
 
-def polarity_model(lda_model, model, vectorizer, topic_words_dist, train_data, multi, tuning=True):
+def polarity_model(lda_model, model, vectorizer, topic_words_dist, train_data, multi, map_topic_id, tuning=True):
     # --- get words distribution in for every topic
     if isinstance(train_data['POLARITY'][0], basestring):
         train_data = concat(
@@ -117,7 +117,8 @@ def polarity_model(lda_model, model, vectorizer, topic_words_dist, train_data, m
     train_matrix = make_lda_train(vectorizer=vectorizer,
                                   lda_model=lda_model,
                                   topic_words_dist=topic_words_dist,
-                                  train_data=train_data
+                                  train_data=train_data,
+                                  topic_ids=map_topic_id
                                   )
     print len(train_data)
     # train_model = svm.split_and_train(svm_bow, sent_topic['POLARITY'])
@@ -132,8 +133,8 @@ def polarity_model(lda_model, model, vectorizer, topic_words_dist, train_data, m
     return pol_model
 
 
-def polarity_test(lda_model, svm_model, vectorizer, topic_words_dist, dataset):
-    csr_matrix_test, sent_topic_test = make_lda_test(lda_model, vectorizer, topic_words_dist, dataset)
+def polarity_test(lda_model, svm_model, vectorizer, topic_words_dist, dataset, map_topic_id):
+    csr_matrix_test, sent_topic_test = make_lda_test(lda_model, vectorizer, topic_words_dist, dataset, topic_ids=map_topic_id)
     prediction = predict(csr_matrix_test, sent_topic_test['POLARITY'], svm_model)
     return prediction
 #

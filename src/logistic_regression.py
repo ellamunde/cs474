@@ -41,6 +41,8 @@ def tuning_parameters(matrix, polarity, multi=True):
     # Set the parameters by cross-validation
     # if isinstance(polarity[0], basestring):
     # print polarity.iloc[0]
+    # text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
+
     scoring = {'auc': 'roc_auc',
                'accuracy': make_scorer(accuracy_score),
                # 'neg_mean_squared_error': 'neg_mean_squared_error'
@@ -49,21 +51,34 @@ def tuning_parameters(matrix, polarity, multi=True):
                }
 
     if not multi:
-        tuned_parameters = [{'tol': [1e-3, 1e-4], 'solver': ['liblinear'],
-                             'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
-                             'class_weight': [None, 'balanced']}]
+        tuned_parameters = [{'tol': [1e-3, 1e-4],
+                             'solver': ['liblinear'],
+                             'C': [0.5, 1, 10, 100, 1000, 10000, 100000],
+                             'fit_intercept': [True, False],
+                             'class_weight': [None, 'balanced'],
+                             # 'penalty': ['I2', 'I1'],
+                             'dual': [True, False]
+                             }]
     else:
-        tuned_parameters = [{'tol': [1e-3, 1e-4], 'solver': ['newton-cg', 'lbfgs', 'sag', 'saga'],
-                             'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
-                             'class_weight': [None, 'balanced'], 'multi_class': ['multinomial', 'ovr']}]
+        tuned_parameters = [{'tol': [1e-3, 1e-4],
+                             'solver': ['newton-cg', 'lbfgs', 'sag', 'saga'],
+                             'C': [0.5, 1, 10, 100, 1000, 10000, 100000],
+                             'fit_intercept': [True, False],
+                             'class_weight': [None, 'balanced'],
+                             'multi_class': ['multinomial', 'ovr'],
+                             'warm_start': [False, True],
+                             'max_iter': [10, 100, 1000, 10000, 100000]
+                             }]
 
     for a_class in set(polarity):
+        # y_this_class = (pol_train == a_class)
         y_this_class = (polarity == a_class)
         model_to_tune = GridSearchCV(LogisticRegression(random_state=0), tuned_parameters, cv=5,
-                                     scoring=scoring, refit='precision_macro')
+                                     scoring=scoring, refit='precision')
         # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
         model_to_tune.fit(matrix, y_this_class)
-
+        # model_to_tune.fit(text_train, y_this_class)
+        # predict(xx_dev, yy_dev, clf)
         for i in model_to_tune.best_params_.keys():
             if i not in tuned_parameters[0].keys():
                 tuned_parameters[0][i] = []
@@ -94,6 +109,7 @@ def tuning_parameters(matrix, polarity, multi=True):
 
     # print chosen_par
     clf.fit(matrix, polarity)
+    # clf.fit(text_train, pol_train)
 
     # if len(set(polarity)) > 2:
     #     for a_class in set(polarity):
@@ -111,7 +127,8 @@ def tuning_parameters(matrix, polarity, multi=True):
     print "The model is trained on the full development set."
     print "The scores are computed on the full evaluation set."
     print
-    # predict(xx_dev, yy_dev, clf)
+    predict(matrix, polarity, clf)
+    # predict(text_test, pol_test, clf)
     # return clf.best_estimator_.C, clf.best_estimator_.solver, clf.best_estimator_.tol, clf.best_estimator_.class_weight, \
     #        clf.best_estimator_.multi_class, clf.best_estimator_.fit_intercept
     return clf
@@ -120,7 +137,7 @@ def tuning_parameters(matrix, polarity, multi=True):
 def split_and_train(matrix, polarity, tuning=True, multi=True):
     # print matrix
     # print polarity
-    text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.5)
+    text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
     print "total polarity split train"
     print pol_train.value_counts()
     print "total polarity split test"
@@ -143,6 +160,6 @@ def split_and_train(matrix, polarity, tuning=True, multi=True):
         model = tuning_parameters(text_train, pol_train, multi=multi)
     else:
         model = default_log_res()
-    print model.get_params(deep=True)
+    # print model.get_params(deep=True)
     predict(text_test, pol_test, model)
     return model

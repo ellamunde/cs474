@@ -56,13 +56,12 @@ def process_to_get_topicno(lda_model, bow_words, get='doc'):
 #         return gensim.models.LdaModel.load(directory)
 
 
-def build_lda_model(word_bag, dictionary, num_topics, alpha, passes, random_state=0):
+def build_lda_model(word_bag, dictionary, num_topics, alpha, passes):
     lda_model = gensim.models.ldamodel.LdaModel(word_bag,
                                                 num_topics=num_topics,
                                                 id2word=dictionary,
                                                 passes=passes,
-                                                alpha=alpha,
-                                                random_state=random_state
+                                                alpha=alpha
                                                 )
     print ">> -----------------------------"
     print "LDA model specification:"
@@ -78,7 +77,53 @@ def save_lda_model(model, directory):
     model.save(directory)
 
 
-def assign_topic_to_ldatopic(vectorizer, lda_model, data):
+def assign_topic_to_ldatopic(vectorizer, lda_model, data, by_count=True):
+    # def set_topic_ldaid(t_value, final_topicids, c_values, topic_ids_count, topic_ids_prob):
+    #     for val in c_values:
+    #         print val
+    #         c_filter = [k[0] for k in topic_ids_count[t_value] if k[1] == val]
+    #         print ">> filter by value"
+    #         print c_filter
+    #
+    #         if len(c_filter) > 2:
+    #             p_prob = sorted([k[1] for k in topic_ids_prob[t_value] if k[0] in c_filter], reverse=True)
+    #             print ">> p_value"
+    #             print p_prob
+    #
+    #             for prob in p_prob:
+    #                 print ">> prob"
+    #                 print prob
+    #                 prob_data = [k for k in topic_ids_prob[t_value] if k[1] == prob and k[0] in c_filter]
+    #                 print ">> prob_data"
+    #                 print prob_data
+    #
+    #                 # sort_prob = sorted(c_filter, key=prob_data.__getitem__)
+    #                 sort_prob = sorted(prob_data, key=lambda tup: tup[1])
+    #                 print ">> sorted prob_data"
+    #                 print sort_prob
+    #                 for sort in sort_prob:
+    #                     print ">> sort in sort"
+    #                     print sort
+    #                     if sort[0] not in final_topicids.keys():
+    #                         print ">> chosen topic"
+    #                         print sort
+    #                         return sort[0]
+    #         elif len(c_filter) == 1:
+    #             if c_filter[0] not in final_topicids.keys():
+    #                 print ">> chosen topic"
+    #                 print c_filter
+    #                 return c_filter[0]
+    #         else:
+    #             p_prob = [k for k in topic_ids_prob[t_value] if k[0] not in final_topicids]
+    #             p_prob = sorted(p_prob, key=lambda tup: tup[1], reverse=True)
+    #             print ">> else prob"
+    #             print p_prob
+    #             if len(p_prob) > 0:
+    #                 print ">> chosen topic"
+    #                 print p_prob
+    #                 return p_prob[0][0]
+
+
     # shuffle(data)
     total_prob = get_list_topics_related(vectorizer, lda_model, data)
     final_topicids = {}
@@ -104,6 +149,42 @@ def assign_topic_to_ldatopic(vectorizer, lda_model, data):
                 final_topicids[r[0]] = i
                 break
 
+    # print final_topicids
+    # for t in topic_ids_prob.keys():
+    #     topic_ids_prob[t] = {k: topic_ids_prob[t][k]/(topic_ids_count[t][k] * 1.0) for k in topic_ids_prob[t].keys()}
+    #
+    # for t in topic_ids_prob.keys():
+    #     topic_ids_prob[t] = sorted(topic_ids_prob[t].iteritems(), key=lambda (k, v): (v, k))
+    #
+    # for t in topic_ids_count.keys():
+    #     topic_ids_count[t] = sorted(topic_ids_count[t].iteritems(), key=lambda (k, v): (v, k))
+    #
+    # for t in range(len(set(data['TOPIC']))):
+    #     print ">> topic id: " + str(t)
+    #     if t in topic_ids_count.keys():
+    #         print topic_ids_count[t]
+    #         c_values = sorted(set(int(i[1]) for i in topic_ids_count[t] if i[1] not in final_topicids.keys()),
+    #                           reverse=True)
+    #         # p_values = sorted(set(int(i[1]) for i in topic_ids_prob[t]), reverse=True)
+    #         print c_values
+    #
+    #         final_topicids[t] = set_topic_ldaid(t_value=t, c_values=c_values,
+    #                                             topic_ids_count=topic_ids_count,
+    #                                             topic_ids_prob=topic_ids_prob,
+    #                                             final_topicids=final_topicids
+    #                                             )
+    #     elif t in topic_ids_prob.keys():
+    #         p_prob = [k for k in topic_ids_prob[t] if k[0] not in final_topicids]
+    #         print ">> elif prob"
+    #         print p_prob
+    #         p_prob = sorted(p_prob, key=lambda tup: tup[1], reverse=True)
+    #         print p_prob
+    #         if len(p_prob) > 0:
+    #             print ">> chosen topic"
+    #             print p_prob
+    #             return p_prob[0][0]
+
+    # print final_topicids
     return final_topicids
 
 
@@ -139,12 +220,38 @@ def get_list_topics_related(vectorizer, lda_model, data):
                 matrix_prob[topics[idx]] = [0.0] * lda_model.num_topics
 
             matrix_prob[topics[idx]][x[0]] += x[1]
+        # print matrix_prob[topics[idx]]
 
+        # most_sim = most_sim[0]
+        #
+        # if most_sim[0] not in topic_count.keys():
+        #     topic_count[most_sim[0]] = {}
+        #     topic_prob[most_sim[0]] = {}
+        #
+        # if topics[idx] not in topic_count[most_sim[0]].keys():
+        #     topic_count[most_sim[0]][topics[idx]] = 0
+        #     topic_prob[most_sim[0]][topics[idx]] = 0.0
+        #
+        # topic_count[most_sim[0]][topics[idx]] += 1
+        # topic_prob[most_sim[0]][topics[idx]] += most_sim[1]
+
+        # temp = list(topic_count[most_sim[0]][topics[idx]])
+        # # -- count
+        # temp[0] += 1
+        # # -- prob
+        # temp[1] += most_sim[1]
+        # topic_count[most_sim[0]][topics[idx]] = tuple(temp)
+        # print topic_count[topics[idx]][most_sim[0]]
+
+    # print topic_count
+    # print topic_prob
+    # print matrix_prob
+    # return topic_count, topic_prob, matrix_prob
     return matrix_prob
 
 
 def build_matrix_csr(vectorizer, lda_model, topic_words_dist, map_topic_id, dataset):
-    # print dataset
+    print dataset
     topics = dataset['TOPIC']
     texts = dataset['TEXT']
     topic_list = {}
@@ -156,16 +263,22 @@ def build_matrix_csr(vectorizer, lda_model, topic_words_dist, map_topic_id, data
     csrmatrix = None
 
     for i in range(len_text):
-        if topics[i] in map_topic_id.keys():
-            topicno = map_topic_id[topics[i]]
-        else:
+        text_nth = [0.0] * idx_range
+
+        # print ">> topic"
+        # print topics[i]
+
+        if topics[i] not in topic_list.keys():
             bow_topic = process_to_bow(vectorizer, lda_model, topics[i])[0]
             topicno = sorted(bow_topic, key=lambda tup: tup[1], reverse=True)[0][0]
             # print ">> bow topic"
             # print bow_topic
-            # map_topic_id[topics[i]] = topicno
+            topic_list[topics[i]] = topicno
 
-        text_nth = [0.0] * idx_range
+        topicno = topic_list[topics[i]]
+        print ">> topic no"
+        print topicno
+
         txt = transform_text(vectorizer, [texts[i]])
         # print type(txt)
         # print ">> matrix"
@@ -178,10 +291,16 @@ def build_matrix_csr(vectorizer, lda_model, topic_words_dist, map_topic_id, data
         # print ">> column"
         # print column
 
-        for idx in range(len(column)):
+        for idx in tqdm(range(len(column))):
             name = get_feature_names(vectorizer)[idx]
+            # print ">> name"
+            # print column[idx]
+            # print value[idx]
+            # print name
+
             value[idx] = topic_words_dist[topicno][name] * value[idx] if name in topic_words_dist[topicno].keys() else 0
             # print len(text_nth), " < ", column[idx]
+
             if len(text_nth) > column[idx]:
                 text_nth[column[idx]] = value[idx]
 
@@ -190,7 +309,12 @@ def build_matrix_csr(vectorizer, lda_model, topic_words_dist, map_topic_id, data
             csrmatrix = vstack([csrmatrix, temp])
         else:
             csrmatrix = temp
+
+        # x_nth.extend([i] * idx_range)
+        # y_nth.extend(k for k in range(idx_range))
+        # -- FOR DEVELOPMENT ONLY --
         # break
 
+    # print csrmatrix
     return csrmatrix
 

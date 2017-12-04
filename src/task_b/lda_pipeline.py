@@ -8,6 +8,7 @@ from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
 import text_to_vector
 import lda
+import pandas as pd
 
 
 def build_pipeline_mode(train, label,classifier):
@@ -92,6 +93,7 @@ class LdaVec(BaseEstimator, TransformerMixin):
     """Extract features from each document for DictVectorizer"""
 
     def fit(self, x, y=None):
+
         text = x['text']
         num_topics = x['num_topics']
         topic_lables = x['topic_labels']
@@ -126,10 +128,19 @@ class LdaVec(BaseEstimator, TransformerMixin):
                                         alpha='auto',
                                         passes=20
                                         )
-        topic_words_dist = lda.get_words_topic(lda_model, num_topics, dict_len)
+
+        train_data = preprocessing.join_tsp(x['TOPIC'], sents_arr, x['POLARITY'])
+        topic_ids = lda.assign_topic_to_ldatopic(vectorizer, lda_model, train_data)
+        topn = dict_len
+        topic_words_dist = lda.get_words_topic(lda_model,
+                                               topic_ids,
+                                               topn
+                                               )
         self.model=lda_model
         self.vectorizer=vectorizer
         self.topic_words_dist=topic_words_dist
+        self.topic_ids = topic_ids
+        self.train_data = train_data
         return self
     #accepts dictionary from lda param values extractor {text:text,num_topics:num_topics,topic_labels:topic_labels}
     def transform(self,lda_dict):
@@ -139,11 +150,22 @@ class LdaVec(BaseEstimator, TransformerMixin):
         topic_words_dist=self.topic_words_dist
         topic_lables=lda_dict['topic_labels']
         text=lda_dict['text']
+        topic_ids = self.topic_ids
+        test_set = self.train_data
+
+        if isinstance(test_set['POLARITY'][0], basestring):
+            test_set = pd.concat([test_set[test_set.POLARITY == 'positive'],
+                                  test_set[test_set.POLARITY == 'negative']]).reset_index(drop=True)
+
+        # print test_data
+        test_tokens, test_sents = preprocessing.preprocess(test_set['CLEANED'])
+        test_set = preprocessing.join_tsp(test_set['TOPIC'], test_sents, test_set['POLARITY'])
+
         csr_matrix_train = lda.build_matrix_csr(vectorizer=vectorizer,
                                                 lda_model=lda_model,
                                                 topic_words_dist=topic_words_dist,
-                                                topics=topic_lables,
-                                                texts=text
+                                                map_topic_id=topic_ids,
+                                                dataset=test_set
                                                 )
         return  csr_matrix_train
 class ItemSelector(BaseEstimator, TransformerMixin):
