@@ -13,7 +13,16 @@ import pandas as pd
 
 def build_pipeline_mode(train, label,classifier):
 
-     pipeline = Pipeline([
+     tuned_parameters = [{'tol': [1e-3, 1e-4],
+                         'solver': ['newton-cg', 'lbfgs', 'sag'],
+                         'C': [0.5, 1, 10, 100, 1000, 10000, 100000],
+                         'fit_intercept': [True, False],
+                         'class_weight': [None, 'balanced'],
+                         'multi_class': ['multinomial', 'ovr'],
+                         'warm_start': [False, True],
+                         'max_iter': [10, 100, 1000, 10000, 100000]
+                         }]
+    pipeline = Pipeline([
         # Extract the parameters for lda and feature
         ('ldaextractor', LdaParamValuesExtractor()),
 
@@ -43,12 +52,8 @@ def build_pipeline_mode(train, label,classifier):
                 'text_stat': 1.0,
             },
         )),
-
-        # Use a SVC classifier on the combined features
-        ('clf', classifier ),
-    ])
-
-    model=pipeline.fit(train,label)
+        ('clf', GridSearchCV((LogisticRegression(random_state=0)), tuned_parameters, cv=5))])
+    model = pipeline.fit(train, label)
     return model
 
 #accepts dataframe
@@ -89,14 +94,16 @@ class TextStats(BaseEstimator, TransformerMixin):
             X.append(dict)
         return X
 
+
 class LdaVec(BaseEstimator, TransformerMixin):
     """Extract features from each document for DictVectorizer"""
 
     def fit(self, x, y=None):
 
-        text = x['text']
-        num_topics = x['num_topics']
-        topic_lables = x['topic_labels']
+        df=x
+        text=df['TEXT']
+        topics=df['TOPIC']
+        num_topics = len(topics.value_counts())
         tokens_arr, sents_arr = preprocessing.preprocess(text)
 
         # --- init vectorizer
@@ -129,8 +136,8 @@ class LdaVec(BaseEstimator, TransformerMixin):
                                         passes=20
                                         )
 
-        train_data = preprocessing.join_tsp(x['TOPIC'], sents_arr, x['POLARITY'])
-        topic_ids = lda.assign_topic_to_ldatopic(vectorizer, lda_model, train_data)
+
+        topic_ids = lda.assign_topic_to_ldatopic(vectorizer, lda_model, df)
         topn = dict_len
         topic_words_dist = lda.get_words_topic(lda_model,
                                                topic_ids,
@@ -140,26 +147,21 @@ class LdaVec(BaseEstimator, TransformerMixin):
         self.vectorizer=vectorizer
         self.topic_words_dist=topic_words_dist
         self.topic_ids = topic_ids
-        self.train_data = train_data
+        self.train_data = df
         return self
-    #accepts dictionary from lda param values extractor {text:text,num_topics:num_topics,topic_labels:topic_labels}
-    def transform(self,lda_dict):
+    #accepts dataframe from lda param values extractor 
+    def transform(self,df):
         lda_model=self.model
         # --- get words distribution in for every topic
         vectorizer=self.vectorizer
         topic_words_dist=self.topic_words_dist
-        topic_lables=lda_dict['topic_labels']
-        text=lda_dict['text']
-        topic_ids = self.topic_ids
-        test_set = self.train_data
 
-        if isinstance(test_set['POLARITY'][0], basestring):
-            test_set = pd.concat([test_set[test_set.POLARITY == 'positive'],
-                                  test_set[test_set.POLARITY == 'negative']]).reset_index(drop=True)
+        topic_ids = self.topic_ids
+        test_set = df
 
         # print test_data
-        test_tokens, test_sents = preprocessing.preprocess(test_set['CLEANED'])
-        test_set = preprocessing.join_tsp(test_set['TOPIC'], test_sents, test_set['POLARITY'])
+        test_tokens, test_sents = preprocessing.preprocess(test_set['TEXT'])
+
 
         csr_matrix_train = lda.build_matrix_csr(vectorizer=vectorizer,
                                                 lda_model=lda_model,
@@ -198,16 +200,20 @@ class LdaParamValuesExtractor(BaseEstimator, TransformerMixin):
 
         topic_lables = []
         text = []
+        #polarity=[]
         for r in matrix:
             topic_lables.append(r[1])
             text.append(r[0])
+            #polarity.append(r[2])
         # --- get total of training instances and topics
-        topic_lables=pd.Series(topic_lables)
-        text=pd.Series(text)
-        num_topics = len(topic_lables.value_counts())
+        topic_lables=pd.Series(topic_lables, name="TOPIC")
+        text=pd.Series(text,name= "TEXT")
+        #polarity=pd.Series(polarity, name ='POLARITY')
+        df=pd.concat([topic_lables,text],axis=1)
+
         #create a dictionary to pass to lda
-        dic_lda={'text': text, 'topic_labels':topic_lables,'num_topics':num_topics}
+
         fs={}
-        fs['lda']=dic_lda
+        fs['lda']=df
         fs['text_stat']=text
         return fs
