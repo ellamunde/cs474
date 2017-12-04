@@ -21,7 +21,7 @@ tqdm.pandas(desc="progress-bar")
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
-def build_doc2vec_model_dm(size=400, window=8, min_count=1, sample=1e-4, negative=5, workers=None,  dm=1, dm_concat=1, batch_words=10000):
+def build_doc2vec_model_dm(size=200, window=8, min_count=1, sample=1e-4, negative=5, workers=None,  dm=1, dm_concat=1, batch_words=10000):
     """
     :param min_count: ignore all words with total frequency lower than this. You have to set this to 1, since the sentence labels only appear once. Setting it any higher than 1 will miss out on the sentences.
     :param window: the maximum distance between the current and predicted word within a sentence. Word2Vec uses a skip-gram model, and this is simply the window size of the skip-gram model.
@@ -58,7 +58,7 @@ def build_doc2vec_model_dm(size=400, window=8, min_count=1, sample=1e-4, negativ
                    )
 
 
-def build_doc2vec_model_dbow(size=400, window=8, min_count=1, sample=1e-4, negative=5, workers=None, dm=0, batch_words=10000):
+def build_doc2vec_model_dbow(size=200, window=8, min_count=1, sample=1e-4, negative=5, workers=None, dm=0, batch_words=10000):
     """
     :param min_count: ignore all words with total frequency lower than this. You have to set this to 1, since the sentence labels only appear once. Setting it any higher than 1 will miss out on the sentences.
     :param window: the maximum distance between the current and predicted word within a sentence. Word2Vec uses a skip-gram model, and this is simply the window size of the skip-gram model.
@@ -204,16 +204,3 @@ class LabeledLineSentence(object):
             # print doc
             # print self.label[idx]
             yield TaggedDocument(simple_preprocess(doc), [self.label[idx]])
-
-# class TestLineSentence(object):
-#     def __init__(self, text, label):
-#         self.text = text
-#
-#     def __iter__(self):
-#         # yield [TaggedDocument(simple_preprocess(doc), [self.label[idx]]) for idx, doc in enumerate(self.text)]
-#         # yield [TaggedDocument(doc, [self.label[idx]]) for idx, doc in enumerate(self.text)]
-#         for idx, doc in enumerate(self.text):
-#             # print ">> sentences"
-#             # print doc
-#             # print self.label[idx]
-#             yield TaggedDocument(simple_preprocess(doc), [self.label[idx]])

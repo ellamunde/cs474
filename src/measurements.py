@@ -15,9 +15,10 @@ def avg_recall(table):
     n_class = len(true_table)
 
     # initialization
-    for idx, row in true_table.iterrows():
-        true_pos[idx] = 0
+    for value in true_table.index.tolist():
+        true_pos[value] = 0
 
+    print true_pos
     # process
     for index, row in table.iterrows():
         n_total += 1
@@ -25,16 +26,22 @@ def avg_recall(table):
         prediction = row['PREDICTION']
 
         if polarity == prediction:
-            true_pos['POLARITY'] += 1
+            true_pos[polarity] += 1
 
     # get recall
     recall = 0
+    print true_pos
+    print type(true_pos)
     for idx, row in true_pos.iteritems():
-        truepositive = float(row[idx])
+        # print idx --> label
+        # print row --> int
+        truepositive = float(row)
         totalpositive = float(true_table[idx])
         recall += truepositive / totalpositive
 
     average = recall / n_class
+    print ">> average recall:"
+    print average
     return average
 
 
@@ -44,7 +51,7 @@ def get_accuracy(table):
 
     for index, row in table.iterrows():
         n_total += 1
-        print row['CLEANED']
+        # print row['CLEANED']
         polarity = row['POLARITY']
         prediction = row['PREDICTION']
         print polarity, prediction
@@ -52,7 +59,9 @@ def get_accuracy(table):
         if polarity == prediction:
             true_positive += 1
 
-    accuracy = true_positive / n_total
+    accuracy = true_positive / (n_total * 1.0)
+    print ">> accuracy:"
+    print accuracy
     return accuracy
 
 
@@ -97,6 +106,8 @@ def f_pn_measurement(table):
         f_pn += f_measure
 
     f_pn = f_pn / 2
+    print ">> f_pn:"
+    print f_pn
     return f_pn
 
 
@@ -127,6 +138,8 @@ def macro_average_mae(table):
         mae += float(differences) / float(n_total)
 
     macro_avg = mae / float(n_class)
+    print ">> macro avg:"
+    print macro_avg
     return macro_avg
 
 
@@ -144,6 +157,8 @@ def standard_mae(table):
         differences += abs((row['PREDICTION'] - row['POLARITY']))
 
     mae = float(differences) / float(n_total)
+    print ">> mae:"
+    print mae
     return mae
 
 

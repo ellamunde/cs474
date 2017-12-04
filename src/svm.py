@@ -1,12 +1,13 @@
+from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 from sklearn.svm import SVC
 from measurements import predict
 from preprocessing import split_data
+from sklearn.metrics import accuracy_score
 from sklearn.utils import compute_class_weight
 import numpy as np
-import measurements
 
 
 def train_svm(train, label, class_weight, c=1000000.0, gamma='auto', kernel='rbf'):
@@ -39,6 +40,13 @@ def tuning_parameter(matrix, polarity, multi=True):
     # xx_train, xx_dev, yy_train, yy_dev = split_data(matrix, polarity, test_size=0.5)
 
     # Set the parameters by cross-validation
+    scoring = {'auc': 'roc_auc',
+               'accuracy': make_scorer(accuracy_score),
+               # 'neg_mean_squared_error': 'neg_mean_squared_error'
+               'precision': 'precision',
+               'precision_macro': 'precision_macro'
+               }
+
     print "# Tuning hyper-parameters"
     print
     if not multi:
@@ -47,14 +55,57 @@ def tuning_parameter(matrix, polarity, multi=True):
                              'C': [1, 10, 100, 1000, 10000, 100000],
                              'class_weight': [None, 'balanced']
                              }]
-        clf = GridSearchCV((SVC()), tuned_parameters, cv=5, scoring="precision_macro")
+
+        for a_class in set(polarity):
+            y_this_class = (polarity == a_class)
+            model_to_tune = GridSearchCV(SVC(random_state=0), tuned_parameters, cv=5,
+                                         scoring=scoring, refit='precision_macro')
+            # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
+            model_to_tune.fit(matrix, y_this_class)
+
+            for i in model_to_tune.best_params_.keys():
+                if i not in tuned_parameters[0].keys():
+                    tuned_parameters[0][i] = []
+                elif i in tuned_parameters[0][i]:
+                    continue
+
+                tuned_parameters[0][i].append(model_to_tune.best_params_[i])
+
+        # clf = GridSearchCV((SVC()), tuned_parameters, cv=5, scoring='precision')
+        clf = GridSearchCV((SVC(random_state=0)), tuned_parameters, cv=5)
+        # if len(set(polarity)) > 2:
+        #     clf = GridSearchCV((SVC(random_state=0)), tuned_parameters, cv=5)
+        # else:
+        #     clf = GridSearchCV((SVC(random_state=0)), tuned_parameters, cv=5, scoring='precision')
     else:
         tuned_parameters = [{'estimator__kernel': ['rbf', 'linear'],
                              'estimator__gamma': [1e-3, 1e-4],
                              'estimator__C': [1, 10, 100, 1000, 10000, 100000],
                              'estimator__class_weight': [None, 'balanced']
                              }]
-        clf = GridSearchCV(OneVsRestClassifier(SVC()), tuned_parameters, cv=5, scoring="precision_macro")
+
+        for a_class in set(polarity):
+            y_this_class = (polarity == a_class)
+            model_to_tune = GridSearchCV(OneVsRestClassifier(SVC(random_state=0)), tuned_parameters, cv=5,
+                                         scoring=scoring, refit='precision_macro')
+            # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
+            model_to_tune.fit(matrix, y_this_class)
+            # print model_to_tune.best_params_
+
+            for i in model_to_tune.best_params_.keys():
+                if i not in tuned_parameters[0].keys():
+                    tuned_parameters[0][i] = []
+                elif i in tuned_parameters[0][i]:
+                    continue
+
+                tuned_parameters[0][i].append(model_to_tune.best_params_[i])
+
+        clf = GridSearchCV(OneVsRestClassifier(SVC(random_state=0)), tuned_parameters, cv=5)
+        # if len(set(polarity)) > 2:
+        #     clf = GridSearchCV(OneVsRestClassifier(SVC(random_state=0)), tuned_parameters, cv=5)
+        # else:
+        #     clf = GridSearchCV(OneVsRestClassifier(SVC(random_state=0)), tuned_parameters, cv=5, scoring=scoring, refit='precision')
+    # print chosen_par
     clf.fit(matrix, polarity)
 
     print "Best parameters set found on development set:"
@@ -157,6 +208,6 @@ def split_and_train(matrix, polarity, multi=True):
     # print svm_model.n_classes_
 
     svm_model = tuning_parameter(text_train_std, pol_train, multi)
-    print svm_model.get_params(deep=True)
+    # print svm_model.get_params(deep=True)
     predict(text_test, pol_test, svm_model)
     return svm_model

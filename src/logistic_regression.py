@@ -1,6 +1,8 @@
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
 
 from measurements import predict
 from preprocessing import split_data
@@ -16,12 +18,14 @@ def build_log_res_model(train, label, c=100, solver='liblinear', tol=None, multi
     print "Logistic Regression model specification:"
     print ">> C: " + str(c)
     print ">> solver: " + solver
+
     if tol is not None:
         print ">> tol: " + str(tol)
     if class_weight is not None:
         print ">> class_weight: " + class_weight
     print ">> fit_intercept: " + str(fit_intercept)
     print ">> -----------------------------"
+
     if multi_class is None:
         return LogisticRegression(C=c, solver=solver, tol=tol, class_weight=class_weight, fit_intercept=fit_intercept).fit(
         train, label)
@@ -37,6 +41,13 @@ def tuning_parameters(matrix, polarity, multi=True):
     # Set the parameters by cross-validation
     # if isinstance(polarity[0], basestring):
     # print polarity.iloc[0]
+    scoring = {'auc': 'roc_auc',
+               'accuracy': make_scorer(accuracy_score),
+               # 'neg_mean_squared_error': 'neg_mean_squared_error'
+               'precision': 'precision',
+               'precision_macro': 'precision_macro'
+               }
+
     if not multi:
         tuned_parameters = [{'tol': [1e-3, 1e-4], 'solver': ['liblinear'],
                              'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
@@ -46,10 +57,52 @@ def tuning_parameters(matrix, polarity, multi=True):
                              'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
                              'class_weight': [None, 'balanced'], 'multi_class': ['multinomial', 'ovr']}]
 
+    for a_class in set(polarity):
+        y_this_class = (polarity == a_class)
+        model_to_tune = GridSearchCV(LogisticRegression(random_state=0), tuned_parameters, cv=5,
+                                     scoring=scoring, refit='precision_macro')
+        # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
+        model_to_tune.fit(matrix, y_this_class)
+
+        for i in model_to_tune.best_params_.keys():
+            if i not in tuned_parameters[0].keys():
+                tuned_parameters[0][i] = []
+            elif i in tuned_parameters[0][i]:
+                continue
+
+            tuned_parameters[0][i].append(model_to_tune.best_params_[i])
+
+    # clf = GridSearchCV((SVC()), tuned_parameters, cv=5, scoring='precision')
+
+    # if not multi:
+    #     tuned_parameters = [{'tol': [1e-3, 1e-4], 'solver': ['liblinear'],
+    #                          'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
+    #                          'class_weight': [None, 'balanced']}]
+    # else:
+    #     tuned_parameters = [{'tol': [1e-3, 1e-4], 'solver': ['newton-cg', 'lbfgs', 'sag', 'saga'],
+    #                          'C': [1, 10, 100, 1000, 10000, 100000], 'fit_intercept': [True, False],
+    #                          'class_weight': [None, 'balanced'], 'multi_class': ['multinomial', 'ovr']}]
+
     print "# Tuning hyper-parameters"
     print
-    clf = GridSearchCV(LogisticRegression(), tuned_parameters, cv=5, scoring="precision_macro")
+    clf = GridSearchCV((LogisticRegression(random_state=0)), tuned_parameters, cv=5)
+    # clf = GridSearchCV(LogisticRegression(), tuned_parameters, cv=5, scoring=scoring, refit='auc')
+    # if len(set(polarity)) > 2:
+    #     clf = GridSearchCV((LogisticRegression(random_state=0)), tuned_parameters, cv=5)
+    # else:
+    #     clf = GridSearchCV((LogisticRegression(random_state=0)), tuned_parameters, cv=5, refit='precision')
+
+    # print chosen_par
     clf.fit(matrix, polarity)
+
+    # if len(set(polarity)) > 2:
+    #     for a_class in set(polarity):
+    #         y_this_class = (polarity == a_class)
+    #         # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
+    #         clf.fit(matrix, y_this_class)
+    # else:
+    #     clf.fit(matrix, polarity)
+
     print "Best parameters set found on development set:"
     print clf.best_estimator_
     print
