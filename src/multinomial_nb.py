@@ -34,16 +34,19 @@ def tuning_parameters(matrix, polarity, multi=True):
                'precision_macro': 'precision_macro'
                }
 
+    text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
+
     tuned_parameters = [{'alpha': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
                          'fit_prior': [True, False],
                          }]
     if not multi:
         for a_class in set(polarity):
-            y_this_class = (polarity == a_class)
+            # y_this_class = (polarity == a_class)
+            y_this_class = (pol_train == a_class)
             model_to_tune = GridSearchCV(BernoulliNB(), tuned_parameters, cv=5,
                                          scoring=scoring, refit='precision_macro')
             # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
-            model_to_tune.fit(matrix, y_this_class)
+            model_to_tune.fit(text_train, y_this_class)
 
             for i in model_to_tune.best_params_.keys():
                 if i not in tuned_parameters[0].keys():
@@ -56,11 +59,13 @@ def tuning_parameters(matrix, polarity, multi=True):
         clf = GridSearchCV((BernoulliNB()), tuned_parameters, cv=5)
     else:
         for a_class in set(polarity):
-            y_this_class = (polarity == a_class)
+            # y_this_class = (polarity == a_class)
+            y_this_class = (pol_train == a_class)
             model_to_tune = GridSearchCV(MultinomialNB(), tuned_parameters, cv=5,
                                          scoring=scoring, refit='precision_macro')
             # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
-            model_to_tune.fit(matrix, y_this_class)
+            # model_to_tune.fit(matrix, y_this_class)
+            model_to_tune.fit(text_train, y_this_class)
 
             for i in model_to_tune.best_params_.keys():
                 if i not in tuned_parameters[0].keys():
@@ -72,7 +77,8 @@ def tuning_parameters(matrix, polarity, multi=True):
 
         clf = GridSearchCV((MultinomialNB()), tuned_parameters, cv=5)
 
-    clf.fit(matrix, polarity)
+    # clf.fit(matrix, polarity)
+    clf.fit(text_train, pol_train)
     # if not multi:
     #     # clf = GridSearchCV((BernoulliNB()), tuned_parameters, cv=5, scoring=scoring, refit='auc')
     #     clf = GridSearchCV((BernoulliNB()), tuned_parameters, cv=5, scoring='accuracy')
@@ -95,7 +101,7 @@ def tuning_parameters(matrix, polarity, multi=True):
     print "The model is trained on the full development set."
     print "The scores are computed on the full evaluation set."
     print
-    # predict(xx_dev, yy_dev, clf)
+    predict(text_test, pol_test, clf)
     # return clf.best_estimator_.alpha, clf.best_estimator_.fit_prior
     return clf
 
