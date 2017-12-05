@@ -1,7 +1,7 @@
-import preprocessing
-import wordnet
+import src.preprocessing as preprocessing
+import src.wordnet as wordnet
 import re
-import measurements
+import src.measurements as measurements
 
 
 def calculate_polarity(tweet_tokens, pos_tokens, neg_tokens):
@@ -55,7 +55,60 @@ pos = "positive"
 neg = "negative"
 neu = "neutral"
 
-train_a = preprocessing.get_data(train, "A")
+train_a = preprocessing.open_preprocess_file(train, "A")[:10]
+# testing
+dataset = 'A'
+
+# get tokens for all class
+tokens_pos = preprocessing.get_tokens(train_a, pos, 'CLEANED')
+tokens_neg = preprocessing.get_tokens(train_a, neg, 'CLEANED')
+tokens_neu = preprocessing.get_tokens(train_a, neu, 'CLEANED')
+
+# remove sentence boundary
+tokens_pos = [tt for t in tokens_pos for tt in t]
+tokens_neg = [tt for t in tokens_neg for tt in t]
+tokens_neu = [tt for t in tokens_neu for tt in t]
+
+# adding synonyms
+syn_pos = wordnet.add_synonyms(tokens_pos)
+syn_neg = wordnet.add_synonyms(tokens_neg)
+syn_neu = wordnet.add_synonyms(tokens_neu)
+
+# adding antonyms
+ant_syn_pos = wordnet.add_antonyms(syn_pos, syn_neg)
+ant_syn_neg = wordnet.add_antonyms(syn_neg, syn_pos)
+
+final_pos = preprocessing.filter_tokens(ant_syn_pos, set(ant_syn_neg)| set(syn_neu))
+final_neg = preprocessing.filter_tokens(ant_syn_neg, set(ant_syn_pos)| set(syn_neu))
+final_neu = preprocessing.filter_tokens(syn_neu, set(ant_syn_neg)| set(ant_syn_pos))
+
+final_lemma_pos = wordnet.lemmatize_words(final_pos)
+final_lemma_neg = wordnet.lemmatize_words(final_neg)
+final_lemma_neu = wordnet.lemmatize_words(final_neu)
+
+final_tokens_pos = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_pos))
+final_tokens_neg = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_neg))
+final_tokens_neu = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_neu))
+
+test_a = preprocessing.open_preprocess_file('test', dataset)
+test_a = test_a[:50]
+test_a_result = test_sentiment(test_a, final_tokens_pos, final_tokens_neg)[:50]
+
+# test accuracy
+accuracy_a = measurements.get_accuracy(test_a_result)
+avg_recall = measurements.avg_recall(test_a_result)
+pn = measurements.f_pn_measurement(test_a_result)
+
+# print accuracy_a
+
+
+
+
+
+
+
+
+
 # train_a_tokens = preprocessing.get_tokens(train_a, None, 'TWEET')
 # print train_a_tokens
 
@@ -64,10 +117,7 @@ train_a = preprocessing.get_data(train, "A")
 # tokens_neg = preprocessing.get_subset(train_a, neg)
 # tokens_neu = preprocessing.get_subset(train_a, neu)
 
-# get tokens for all class
-tokens_pos = preprocessing.get_tokens(train_a, pos, 'CLEANED')
-tokens_neg = preprocessing.get_tokens(train_a, neg, 'CLEANED')
-tokens_neu = preprocessing.get_tokens(train_a, neu, 'CLEANED')
+
 
 # one token only exists in one class
 # filtered_pos = preprocessing.filter_tokens(tokens_pos, tokens_neg + tokens_neu)
@@ -86,19 +136,10 @@ tokens_neu = preprocessing.get_tokens(train_a, neu, 'CLEANED')
 # syn_neg = wordnet.add_synonyms(filtered_neg)
 # syn_neu = wordnet.add_synonyms(filtered_neu)
 
-# adding synonyms
-syn_pos = wordnet.add_synonyms(tokens_pos)
-syn_neg = wordnet.add_synonyms(tokens_neg)
-syn_neu = wordnet.add_synonyms(tokens_neu)
 
-# adding antonyms
-ant_syn_pos = wordnet.add_antonyms(syn_pos,syn_neg)
-ant_syn_neg = wordnet.add_antonyms(syn_neg,syn_pos)
 
 # filtering (?) (again?)
-final_pos = preprocessing.filter_tokens(ant_syn_pos,set(ant_syn_neg)|set(syn_neu))
-final_neg = preprocessing.filter_tokens(ant_syn_neg,set(ant_syn_pos)|set(syn_neu))
-final_neu = preprocessing.filter_tokens(syn_neu,set(ant_syn_neg)|set(ant_syn_pos))
+
 
 # print "pos second filter: "
 # print final_pos
@@ -108,26 +149,9 @@ final_neu = preprocessing.filter_tokens(syn_neu,set(ant_syn_neg)|set(ant_syn_pos
 # print final_neu
 
 # tokens only
-final_lemma_pos = wordnet.lemmatize_words(final_pos)
-final_lemma_neg = wordnet.lemmatize_words(final_neg)
-final_lemma_neu = wordnet.lemmatize_words(final_neu)
-
-final_tokens_pos = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_pos))
-final_tokens_neg = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_neg))
-final_tokens_neu = preprocessing.remove_stopwords(preprocessing.get_tokens_only(final_lemma_neu))
-
 # print "pos: "
 # print final_tokens_pos
 # print "neg: "
 # print final_tokens_neg
 # print "neu: "
 # print final_tokens_neu
-
-# testing
-test_a = preprocessing.get_data(test, "A")
-test_a = test_a[:50]
-test_a_result = test_sentiment(test_a, final_tokens_pos, final_tokens_neg)
-
-# test accuracy
-accuracy_a = measurements.get_accuracy(test_a_result)
-print accuracy_a

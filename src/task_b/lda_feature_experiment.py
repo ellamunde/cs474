@@ -1,10 +1,9 @@
 # https://link.springer.com/chapter/10.1007%2F978-3-642-13657-3_43
-import text_to_vector
-from measurements import predict
+import src.text_to_vector
+from src.measurements import predict
 import numpy
-import lda
-import preprocessing
-import logistic_regression as logres
+import src.preprocessing as preprocessing
+import src.logistic_regression as logres
 import lda_pipeline
 
 dataset = 'B'

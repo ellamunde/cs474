@@ -18,7 +18,7 @@ def avg_recall(table):
     for value in true_table.index.tolist():
         true_pos[value] = 0
 
-    print true_pos
+    # print true_pos
     # process
     for index, row in table.iterrows():
         n_total += 1
@@ -30,8 +30,8 @@ def avg_recall(table):
 
     # get recall
     recall = 0
-    print true_pos
-    print type(true_pos)
+    # print true_pos
+    # print type(true_pos)
     for idx, row in true_pos.iteritems():
         # print idx --> label
         # print row --> int
@@ -54,7 +54,7 @@ def get_accuracy(table):
         # print row['CLEANED']
         polarity = row['POLARITY']
         prediction = row['PREDICTION']
-        print polarity, prediction
+        # print polarity, prediction
 
         if polarity == prediction:
             true_positive += 1
@@ -75,33 +75,38 @@ def f_pn_measurement(table):
     true_table = table['POLARITY'].value_counts()
 
     f_pn = 0
-    for idx, row in true_table.iterrows():
+    for idx, row in true_table.iteritems():
         tp = 0
         fp = 0
         tn = 0
         fn = 0
+        print idx
+        print row
 
         if idx == "neutral":
             continue
 
-        for index, instance in table.iterrows():
+        for index in range(len(table)):
+            print index
             point = 0
-            polarity = instance['POLARITY']
-            prediction = instance['PREDICTION']
+            polarity = table['POLARITY'][index]
+            prediction = table['PREDICTION'][index]
+            print polarity
+            print prediction
 
             if polarity == prediction:
-                if polarity == idx:
+                if polarity == "positive":
                     tp += 1
                 else:
                     tn += 1
             else:
-                if prediction == idx:
+                if prediction == "positive":
                     fp += 1
                 else:
                     fn += 1
 
-        precision = float(tp) / float(tp + fp)
-        recall = float(tp) / float(tp + fn)
+        precision = float(tp) / float(tp + fp) if float(tp + fp) > 0 else 0
+        recall = float(tp) / float(tp + fn) if float(tp + fn) > 0 else 0
         f_measure = 2 * precision * recall / (precision + recall)
         f_pn += f_measure
 

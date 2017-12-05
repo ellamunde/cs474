@@ -1,16 +1,16 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 
-import features
-import preprocessing
-import measurements
+import src.features as features
+import src.preprocessing as preprocessing
+import src.measurements as measurements
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
-from preprocessing import split_data
+from src.preprocessing import split_data
 from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
-import text_to_vector
-import lda
+import src.text_to_vector as text_to_vector
+import src.lda as lda
 import pandas as pd
 tuned_parameters = [{'tol': [1e-3, 1e-4],
                          'solver': ['newton-cg', 'lbfgs', 'sag'],

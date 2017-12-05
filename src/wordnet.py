@@ -37,15 +37,16 @@ def get_lemma(token, tag):
 
 def add_synonyms(tokens):
     synonyms = []
-    for token, tag in tokens:
-        if re.match(r'^@', token):
+    # print tokens
+    for token in tokens:
+        if re.match(r'^@', token[0]):
             continue
 
-        if "_" in token:
-            token = token.split("_")[0]
-            synonyms = synonyms + get_antonyms(token, tag)
+        if "_" in token[0]:
+            token = token[0].split("_")[0]
+            synonyms = synonyms + get_antonyms(token[0], token[1])
         else:
-            synonyms = synonyms + get_synonyms(token, tag)
+            synonyms = synonyms + get_synonyms(token[0], token[1])
 
     #append synonyms
     tokens = set(tokens + synonyms)

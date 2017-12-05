@@ -67,7 +67,7 @@ def get_data(data="train", task="A"):
 
 def open_preprocess_file(data="train", task="A"):
     rootdir = get_root_dir()
-    directory = "{}{}/{}_{}{}".format(rootdir, "/preprocess", data, task, ".txt")
+    directory = "{}{}/{}_{}{}".format(rootdir, "/gold_data/", data, task, ".txt")
 
     table = pd.DataFrame()
     tweets = []

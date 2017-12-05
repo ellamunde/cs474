@@ -1,4 +1,4 @@
-import pre_task_bc_lda as pre
+import src.pre_task_bc_lda as pre
 
 dataset = 'B'
 input_from_file = pre.get_data('train', dataset)[:100]
@@ -10,7 +10,7 @@ polarity_model = pre.polarity_model(lda_model=lda_model, model='logres', vectori
                                     train_data=train_data, multi=False, map_topic_id=map_topic_id)
 prediction = pre.polarity_test(lda_model, polarity_model, vectorizer, topic_words_dist, test_set, map_topic_id=map_topic_id)
 
-import measurements as m
+import src.measurements as m
 m.get_accuracy(prediction)
 m.avg_recall(prediction)
 
