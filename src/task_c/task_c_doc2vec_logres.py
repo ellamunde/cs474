@@ -1,4 +1,4 @@
-import pre_task_bc_doc2vec as pre
+import src.pre_task_bc_doc2vec as pre
 
 
 dataset = 'C'
