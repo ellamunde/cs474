@@ -114,10 +114,10 @@ def polarity_model(d2v_model, model, train_data, multi, tuning=True):
     return pol_model
 
 
-def polarity_test(d2v_model, svm_model, dataset):
+def polarity_test(d2v_model, pol_model, dataset):
     csr_matrix_test, test_data = make_doc2vec_test(d2v_model, dataset)
     # --- build svm model >> for polarity
-    prediction = predict(csr_matrix_test, test_data['POLARITY'], svm_model)
+    prediction = predict(csr_matrix_test, test_data['POLARITY'], pol_model)
 
     return prediction
 

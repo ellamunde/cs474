@@ -6,23 +6,26 @@ from src.preprocessing import split_data
 from sklearn.metrics import accuracy_score
 import mord
 
-def default_log_res(type='AT'):
-    model = mord.LogisticAT(alpha=1.)
+
+def default_log_res(type='AT', alpha=1.):
+    model = mord.LogisticAT(alpha=alpha)
     if type == 'SE':
-        model = mord.LogisticSE(alpha=1.)
+        model = mord.LogisticSE(alpha=alpha)
     elif type == 'IT':
-        model = mord.LogisticIT(alpha=1.)
+        model = mord.LogisticIT(alpha=alpha)
     return model
 
+
 def build_model(train_vec, train_label, type='AT'):
-    model = mord.LogisticAT(alpha=1.)
+    model = default_log_res(alpha=1.)
     if type=='SE':
-        model = mord.LogisticSE(alpha=1.)
+        model = default_log_res(alpha=1.)
     elif type=='IT':
-        model = mord.LogisticIT(alpha=1.)
+        model = default_log_res(alpha=1.)
 
     model.fit(train_vec, train_label)
     return model
+
 
 def split_and_train(matrix, polarity, ordlog_type='AT'):
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.5)

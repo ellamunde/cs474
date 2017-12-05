@@ -6,17 +6,17 @@ from preprocessing import split_data
 from sklearn.metrics import accuracy_score
 
 
-def build_nb_model(train_vec, train_label, alpha=0.1, fit_prior=None, multi=True):
-    model = MultinomialNB(alpha=alpha, fit_prior=fit_prior)
-    model.fit(train_vec, train_label)
-    print ">> -----------------------------"
-    print "Naive Bayes Multinomial model specification:"
-    print ">> alpha: " + str(alpha)
-    if fit_prior is not None:
-        print ">> alpha: " + str(alpha)
-    print ">> -----------------------------"
-    print model.get_params(deep=True)
-    return model
+# def build_nb_model(train_vec, train_label, alpha=0.1, fit_prior=None, multi=True):
+#     model = MultinomialNB(alpha=alpha, fit_prior=fit_prior)
+#     model.fit(train_vec, train_label)
+#     print ">> -----------------------------"
+#     print "Naive Bayes Multinomial model specification:"
+#     print ">> alpha: " + str(alpha)
+#     if fit_prior is not None:
+#         print ">> alpha: " + str(alpha)
+#     print ">> -----------------------------"
+#     print model.get_params(deep=True)
+#     return model
 
 
 def tuning_parameters(matrix, polarity, multi=True):

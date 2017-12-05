@@ -1,17 +1,15 @@
 # coding=utf-8
 import multiprocessing
-
 from gensim.models import Doc2Vec
 # from gensim.models import doc2vec
 from gensim.models.doc2vec import TaggedDocument
 from gensim.utils import simple_preprocess
 from scipy.sparse import csr_matrix, vstack
 from tqdm import tqdm
-
 import logging
-import random
-import os
-import sklearn.metrics.pairwise as pairwise
+# import random
+# import os
+# import sklearn.metrics.pairwise as pairwise
 
 # progress bar
 from preprocessing import get_root_dir
@@ -21,7 +19,8 @@ tqdm.pandas(desc="progress-bar")
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
-def build_doc2vec_model_dm(size=200, window=8, min_count=1, sample=1e-4, negative=5, workers=None,  dm=1, dm_concat=1, batch_words=10000, seed=0):
+def build_doc2vec_model_dm(size=200, window=8, min_count=1, sample=1e-4, negative=5, workers=None, dm=1, dm_concat=1,
+                           batch_words=10000, seed=0):
     """
     :param min_count: ignore all words with total frequency lower than this. You have to set this to 1, since the sentence labels only appear once. Setting it any higher than 1 will miss out on the sentences.
     :param window: the maximum distance between the current and predicted word within a sentence. Word2Vec uses a skip-gram model, and this is simply the window size of the skip-gram model.
@@ -59,7 +58,8 @@ def build_doc2vec_model_dm(size=200, window=8, min_count=1, sample=1e-4, negativ
                    )
 
 
-def build_doc2vec_model_dbow(size=200, window=8, min_count=1, sample=1e-4, negative=5, workers=None, dm=0, batch_words=10000, seed=0):
+def build_doc2vec_model_dbow(size=200, window=8, min_count=1, sample=1e-4, negative=5, workers=None, dm=0,
+                             batch_words=10000, seed=0):
     """
     :param min_count: ignore all words with total frequency lower than this. You have to set this to 1, since the sentence labels only appear once. Setting it any higher than 1 will miss out on the sentences.
     :param window: the maximum distance between the current and predicted word within a sentence. Word2Vec uses a skip-gram model, and this is simply the window size of the skip-gram model.
@@ -95,44 +95,44 @@ def build_doc2vec_model_dbow(size=200, window=8, min_count=1, sample=1e-4, negat
                    )
 
 
-def sentences_perm(sentences):
-    shuffled = list(sentences)
-    random.shuffle(shuffled)
-    return shuffled
+# def sentences_perm(sentences):
+#     shuffled = list(sentences)
+#     random.shuffle(shuffled)
+#     return shuffled
 
 
-def train_model(model, sentences, loops=10):
-    for epoch in range(loops):
-        model.train(tqdm(sentences_perm(sentences)))
-
-    save_model(model)
-    return model
-
-
-def infer_vector(model, sentence):
-    return model.infer_vector(sentence)
+# def train_model(model, sentences, loops=10):
+#     for epoch in range(loops):
+#         model.train(tqdm(sentences_perm(sentences)))
+#
+#     save_model(model)
+#     return model
 
 
-def save_model(model):
-    model.save(os.path.abspath(get_root_dir() + "/model/d2v_model"))
+# def infer_vector(model, sentence):
+#     return model.infer_vector(sentence)
 
 
-def cosine_similarity(sentence1, sentence2):
-    return pairwise.cosine_similarity(sentence1, sentence2)
+# def save_model(model):
+#     model.save(os.path.abspath(get_root_dir() + "/model/d2v_model"))
 
 
-def prediction(model, test):
-    for idx, row in test.itterows():
-        model.most_similar()
+# def cosine_similarity(sentence1, sentence2):
+#     return pairwise.cosine_similarity(sentence1, sentence2)
 
 
-def process_test_data(f):
-    """
-    for splitting the sentence
-    :param f:
-    :return:
-    """
-    yield [simple_preprocess(line) for i, line in enumerate(f)]
+# def prediction(model, test):
+#     for idx, row in test.itterows():
+#         model.most_similar()
+
+
+# def process_test_data(f):
+#     """
+#     for splitting the sentence
+#     :param f:
+#     :return:
+#     """
+#     yield [simple_preprocess(line) for i, line in enumerate(f)]
 
 
 def get_word_distribution(model, text, topic=False):

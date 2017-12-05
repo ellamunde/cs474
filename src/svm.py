@@ -10,29 +10,29 @@ from sklearn.utils import compute_class_weight
 import numpy as np
 
 
-def train_svm(train, label, class_weight, c=1000000.0, gamma='auto', kernel='rbf'):
-    """
-    Create and train the Support Vector Machine.
-    """
-    # with radial kernel
-    svm_model = OneVsRestClassifier(SVC(C=c,
-                                        gamma=gamma,
-                                        kernel=kernel,
-                                        class_weight=class_weight
-                                        ))
-    # svm_model = SVC(C=C, gamma=gamma, kernel=kernel, )
-    svm_model.fit(train, label)
-
-    print ">> -----------------------------"
-    print "SVC model specification:"
-    print ">> C: " + str(c)
-    print ">> gamma: " + str(gamma)
-    print ">> kernel: " + str(kernel)
-    print ">> -----------------------------"
-
-    print svm_model.get_params(deep=True)
-
-    return svm_model
+# def train_svm(train, label, class_weight, c=1000000.0, gamma='auto', kernel='rbf'):
+#     """
+#     Create and train the Support Vector Machine.
+#     """
+#     # with radial kernel
+#     svm_model = OneVsRestClassifier(SVC(C=c,
+#                                         gamma=gamma,
+#                                         kernel=kernel,
+#                                         class_weight=class_weight
+#                                         ))
+#     # svm_model = SVC(C=C, gamma=gamma, kernel=kernel, )
+#     svm_model.fit(train, label)
+#
+#     print ">> -----------------------------"
+#     print "SVC model specification:"
+#     print ">> C: " + str(c)
+#     print ">> gamma: " + str(gamma)
+#     print ">> kernel: " + str(kernel)
+#     print ">> -----------------------------"
+#
+#     print svm_model.get_params(deep=True)
+#
+#     return svm_model
 
 
 def tuning_parameter(matrix, polarity, multi=True):

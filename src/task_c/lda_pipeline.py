@@ -65,6 +65,12 @@ def split_and_train(matrix,polarity,classifier):
     return model
 
 
+def predict(model,pipeline_model,test_set,polarity):
+    features=pipeline_model.transform(test_set)
+    prediction = measurements.predict(features, polarity, model)
+    return prediction
+
+
 class TextStats(BaseEstimator, TransformerMixin):
     """Extract features from each document for DictVectorizer"""
 

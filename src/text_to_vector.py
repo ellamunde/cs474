@@ -18,18 +18,18 @@ def count_vectorizer(max_features=400):
     return tf_vectorizer
 
 
-def tfidf_vectorizer():
-    t0 = time()
-    tf_vectorizer = TfidfVectorizer(ngram_range=(1, 2),
-                                    # lowercase=True,
-                                    stop_words='english'
-                                    # vocabulary=dictionary
-
-                                    )
-
-    print("done in %0.3fs." % (time() - t0))
-
-    return tf_vectorizer
+# def tfidf_vectorizer():
+#     t0 = time()
+#     tf_vectorizer = TfidfVectorizer(ngram_range=(1, 2),
+#                                     # lowercase=True,
+#                                     stop_words='english'
+#                                     # vocabulary=dictionary
+#
+#                                     )
+#
+#     print("done in %0.3fs." % (time() - t0))
+#
+#     return tf_vectorizer
 
 
 def transform_text(vectorizer, text):
@@ -40,12 +40,12 @@ def fit_to_vectorizer(vectorizer, text):
     return vectorizer.fit_transform(text)
 
 
-def get_bow_representation(dictionary, text):
-    # convert dictionary into bag-of-words representation
-    word_bag = [dictionary.doc2bow(row) for row in text]
-    # print ">> type word bag"
-    # print type(word_bag)
-    return word_bag
+# def get_bow_representation(dictionary, text):
+#     # convert dictionary into bag-of-words representation
+#     word_bag = [dictionary.doc2bow(row) for row in text]
+#     # print ">> type word bag"
+#     # print type(word_bag)
+#     return word_bag
 
 
 def map_idvec2word(vectorizer):

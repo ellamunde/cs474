@@ -1,11 +1,9 @@
 from scipy.sparse import coo_matrix, dok_matrix, hstack, vstack, csr_matrix
-from sklearn.utils import shuffle
-from tqdm import tqdm
-from gensim import corpora
+# from sklearn.utils import shuffle
+# from tqdm import tqdm
+# from gensim import corpora
 from text_to_vector import transform_text, get_feature_names, convert_to_sparse_bow
-
 import gensim
-import os
 
 
 def process_to_bow(vectorizer, lda_model, text):
@@ -37,19 +35,19 @@ def get_words_topic(lda_model, topics, topn):
     return topic_words
 
 
-def process_to_get_topicno(lda_model, bow_words, get='doc'):
-    # print bow_topic
-    doc_topics, word_topics, phi_values = lda_model.get_document_topics(bow_words, per_word_topics=True)
-    if get == 'phi':
-        # return sorted(doc_topics, key=lambda tup: tup[1], reverse=True)[0][0]
-        return sorted(doc_topics, key=lambda tup: tup[1], reverse=True)
-    elif get == 'word':
-        # return sorted(word_topics, key=lambda tup: tup[1], reverse=True)[0][0]
-        return sorted(word_topics, key=lambda tup: tup[1], reverse=True)
-    else:
-        # return sorted(phi_values, key=lambda tup: tup[1], reverse=True)[0][0]
-        return sorted(phi_values, key=lambda tup: tup[1], reverse=True)
-
+# def process_to_get_topicno(lda_model, bow_words, get='doc'):
+#     # print bow_topic
+#     doc_topics, word_topics, phi_values = lda_model.get_document_topics(bow_words, per_word_topics=True)
+#     if get == 'phi':
+#         # return sorted(doc_topics, key=lambda tup: tup[1], reverse=True)[0][0]
+#         return sorted(doc_topics, key=lambda tup: tup[1], reverse=True)
+#     elif get == 'word':
+#         # return sorted(word_topics, key=lambda tup: tup[1], reverse=True)[0][0]
+#         return sorted(word_topics, key=lambda tup: tup[1], reverse=True)
+#     else:
+#         # return sorted(phi_values, key=lambda tup: tup[1], reverse=True)[0][0]
+#         return sorted(phi_values, key=lambda tup: tup[1], reverse=True)
+#
 
 # def load_lda_model(directory):
 #     if os.path.exists(directory):
@@ -74,8 +72,8 @@ def build_lda_model(word_bag, dictionary, num_topics, alpha, passes, random_stat
     return lda_model
 
 
-def save_lda_model(model, directory):
-    model.save(directory)
+# def save_lda_model(model, directory):
+#     model.save(directory)
 
 
 def assign_topic_to_ldatopic(vectorizer, lda_model, data):

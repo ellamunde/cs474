@@ -13,26 +13,26 @@ def default_log_res():
     return LogisticRegression(C=100)
 
 
-def build_log_res_model(train, label, c=100, solver='liblinear', tol=None, multi_class=None,
-                        fit_intercept=None, class_weight=None):
-    print ">> -----------------------------"
-    print "Logistic Regression model specification:"
-    print ">> C: " + str(c)
-    print ">> solver: " + solver
-
-    if tol is not None:
-        print ">> tol: " + str(tol)
-    if class_weight is not None:
-        print ">> class_weight: " + class_weight
-    print ">> fit_intercept: " + str(fit_intercept)
-    print ">> -----------------------------"
-
-    if multi_class is None:
-        return LogisticRegression(C=c, solver=solver, tol=tol, class_weight=class_weight, fit_intercept=fit_intercept).fit(
-        train, label)
-    else:
-        return LogisticRegression(C=c, solver=solver, tol=tol, class_weight=class_weight, multi_class=multi_class,
-                                  fit_intercept=fit_intercept).fit(train, label)
+# def build_log_res_model(train, label, c=100, solver='liblinear', tol=None, multi_class=None,
+#                         fit_intercept=None, class_weight=None):
+#     print ">> -----------------------------"
+#     print "Logistic Regression model specification:"
+#     print ">> C: " + str(c)
+#     print ">> solver: " + solver
+#
+#     if tol is not None:
+#         print ">> tol: " + str(tol)
+#     if class_weight is not None:
+#         print ">> class_weight: " + class_weight
+#     print ">> fit_intercept: " + str(fit_intercept)
+#     print ">> -----------------------------"
+#
+#     if multi_class is None:
+#         return LogisticRegression(C=c, solver=solver, tol=tol, class_weight=class_weight, fit_intercept=fit_intercept).fit(
+#         train, label)
+#     else:
+#         return LogisticRegression(C=c, solver=solver, tol=tol, class_weight=class_weight, multi_class=multi_class,
+#                                   fit_intercept=fit_intercept).fit(train, label)
 
 
 def tuning_parameters(matrix, polarity, multi=True):
@@ -42,7 +42,7 @@ def tuning_parameters(matrix, polarity, multi=True):
     # Set the parameters by cross-validation
     # if isinstance(polarity[0], basestring):
     # print polarity.iloc[0]
-    pdml.Modal
+    # pdml.Modal
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
 
     scoring = {#'auc': 'roc_auc',
