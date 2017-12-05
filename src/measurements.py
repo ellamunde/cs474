@@ -80,8 +80,8 @@ def f_pn_measurement(table):
         fp = 0
         tn = 0
         fn = 0
-        print idx
-        print row
+        # print idx
+        # print row
 
         if idx == "neutral":
             continue
@@ -131,15 +131,20 @@ def macro_average_mae(table):
     n_class = len(true_table)
 
     mae = 0
-    for idx, row in true_table.iterrows():
+    # print true_table
+    for idx, row in true_table.iteritems():
         # number instance with true class C
-        n_total = row[idx]
-        data = table[table['POLARITY'] == idx]
+        # print idx
+        # print row
+        n_total = row
+        data = table[table['POLARITY'] == idx].reset_index(drop=True)
+        # print data
 
         differences = 0
-        for data_idx, data_row in data.itterrows():
-            differences += abs((data_row['PREDICTION'] - data_row['POLARITY']))
+        for data_idx in range(len(data)):
+            differences += abs((data['PREDICTION'][data_idx] - data['POLARITY'][data_idx]))
 
+        # print differences
         mae += float(differences) / float(n_total)
 
     macro_avg = mae / float(n_class)
@@ -157,9 +162,11 @@ def standard_mae(table):
 
     differences = 0
     n_total = 0
-    for idx, row in table.itterrows():
+    # print table
+    for idx in range(len(table)):
+        # print idx
         n_total += 1
-        differences += abs((row['PREDICTION'] - row['POLARITY']))
+        differences += abs((table['PREDICTION'][idx] - table['POLARITY'][idx]))
 
     mae = float(differences) / float(n_total)
     print ">> mae:"

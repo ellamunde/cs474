@@ -14,7 +14,7 @@ if isinstance(train_b['POLARITY'][0], basestring):
 matrix=train_b[['CLEANED','TOPIC']].values
 polarity=train_b['POLARITY']
 
-model,lda_pipeline_model=lda_pipeline.split_and_train(matrix,polarity)
+model, lda_pipeline_model=lda_pipeline.split_and_train(matrix,polarity)
 #testing
 matrix=test_b[['CLEANED','TOPIC']].values
 polarity=test_b['POLARITY']

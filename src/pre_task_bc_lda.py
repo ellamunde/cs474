@@ -9,6 +9,7 @@ import text_to_vector
 from measurements import predict
 import logistic_regression as logres
 import multinomial_nb as mnb
+import ord_logistic_regression as ordinal
 
 
 def get_data(filetype='train', dataset='B'):
@@ -141,6 +142,8 @@ def classify(model,train_matrix,polarity, multi, tuning):
         pol_model = logres.split_and_train(train_matrix,polarity, tuning=tuning, multi=multi)
     elif model == 'mnb':
         pol_model = mnb.split_and_train(train_matrix, polarity, multi=multi)
+    elif model.startswith('ordreg'):
+        pol_model = ordinal.split_and_train(train_matrix, polarity, model.split("_")[1])
 
     return pol_model
 

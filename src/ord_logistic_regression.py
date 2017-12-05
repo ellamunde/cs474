@@ -24,8 +24,6 @@ def build_model(train_vec, train_label, type='AT'):
     model.fit(train_vec, train_label)
     return model
 
-
-
 def split_and_train(matrix, polarity, ordlog_type='AT'):
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.5)
     print "total polarity split train"

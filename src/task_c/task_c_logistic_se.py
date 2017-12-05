@@ -1,15 +1,11 @@
 from src.measurements import predict
 
-from src import preprocessing
-
-import ord_logistic_regression as logres
+from src import ord_logistic_regression as logres
 
 import lda_pipeline
 
 from src import preprocessing
 
-
-import numpy as np
 dataset = 'C'
 
 train_c = preprocessing.open_preprocess_file('train', dataset)[:100]
