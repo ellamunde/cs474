@@ -27,7 +27,7 @@ def tuning_parameters(matrix, polarity, multi=True):
     print "# Tuning hyper-parameters"
     print
 
-    scoring = {'auc': 'roc_auc',
+    scoring = {#'auc': 'roc_auc',
                'accuracy': make_scorer(accuracy_score),
                # 'neg_mean_squared_error': 'neg_mean_squared_error'
                'precision': 'precision',

@@ -1,3 +1,6 @@
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+
 import features
 import preprocessing
 import measurements
@@ -9,11 +12,7 @@ from sklearn.pipeline import Pipeline
 import text_to_vector
 import lda
 import pandas as pd
-
-
-def build_pipeline_mode(train, label,classifier):
-
-     tuned_parameters = [{'tol': [1e-3, 1e-4],
+tuned_parameters = [{'tol': [1e-3, 1e-4],
                          'solver': ['newton-cg', 'lbfgs', 'sag'],
                          'C': [0.5, 1, 10, 100, 1000, 10000, 100000],
                          'fit_intercept': [True, False],
@@ -22,6 +21,10 @@ def build_pipeline_mode(train, label,classifier):
                          'warm_start': [False, True],
                          'max_iter': [10, 100, 1000, 10000, 100000]
                          }]
+
+def build_pipeline_mode(train, label,classifier):
+
+
     pipeline = Pipeline([
         # Extract the parameters for lda and feature
         ('ldaextractor', LdaParamValuesExtractor()),

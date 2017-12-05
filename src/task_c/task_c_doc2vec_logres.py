@@ -5,7 +5,7 @@ dataset = 'C'
 input_from_file = pre.get_data('train', dataset)[:100]
 test_set = pre.get_data('test', dataset)[:100]
 
-epoch = 200
+epoch = 1
 model_dm, model_dbow, train_data = pre.get_model(input_from_file, epoch=epoch)
 # print train_data
 dm_svm_model = pre.polarity_model(d2v_model=model_dm,model='logres', train_data=train_data, multi=True)

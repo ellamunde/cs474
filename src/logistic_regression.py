@@ -44,7 +44,7 @@ def tuning_parameters(matrix, polarity, multi=True):
 
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
 
-    scoring = {'auc': 'roc_auc',
+    scoring = {#'auc': 'roc_auc',
                'accuracy': make_scorer(accuracy_score),
                # 'neg_mean_squared_error': 'neg_mean_squared_error'
                'precision': 'precision',

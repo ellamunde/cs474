@@ -40,7 +40,7 @@ def tuning_parameter(matrix, polarity, multi=True):
     # xx_train, xx_dev, yy_train, yy_dev = split_data(matrix, polarity, test_size=0.5)
 
     # Set the parameters by cross-validation
-    scoring = {'auc': 'roc_auc',
+    scoring = {#'auc': 'roc_auc',
                'accuracy': make_scorer(accuracy_score),
                # 'neg_mean_squared_error': 'neg_mean_squared_error'
                'precision': 'precision',
