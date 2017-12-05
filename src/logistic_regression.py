@@ -1,3 +1,4 @@
+from pandas import DataFrame
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
@@ -42,7 +43,12 @@ def tuning_parameters(matrix, polarity, multi=True):
     # Set the parameters by cross-validation
     # if isinstance(polarity[0], basestring):
     # print polarity.iloc[0]
-    # pdml.Modal
+    # print type(matrix)
+
+    # mf = pdml.ModelFrame(DataFrame(matrix.toarray()), polarity.reset_index(drop=True))
+    # sampler = mf.imbalance.under_sampling.ClusterCentroids()
+    # sampled = mf.fit_sample(sampler)
+    # print sampled
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
 
     scoring = {#'auc': 'roc_auc',
@@ -71,23 +77,24 @@ def tuning_parameters(matrix, polarity, multi=True):
                              'warm_start': [False, True],
                              'max_iter': [10, 100, 1000, 10000, 100000]
                              }]
+    if not multi:
+        for a_class in set(polarity):
+            y_this_class = (pol_train == a_class)
+            # y_this_class = (sampled['POLARITY'] == a_class)
+            # y_this_class = (polarity == a_class)
+            model_to_tune = GridSearchCV(LogisticRegression(random_state=0), tuned_parameters, cv=5,
+                                         scoring=scoring, refit='precision_macro')
+            # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
+            model_to_tune.fit(matrix, y_this_class)
+            # model_to_tune.fit(sampled['TEXT'], y_this_class)
+            # predict(xx_dev, yy_dev, clf)
+            for i in model_to_tune.best_params_.keys():
+                if i not in tuned_parameters[0].keys():
+                    tuned_parameters[0][i] = []
+                elif i in tuned_parameters[0][i]:
+                    continue
 
-    for a_class in set(polarity):
-        y_this_class = (pol_train == a_class)
-        # y_this_class = (polarity == a_class)
-        model_to_tune = GridSearchCV(LogisticRegression(random_state=0), tuned_parameters, cv=5,
-                                     scoring=scoring, refit='precision_macro')
-        # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
-        # model_to_tune.fit(matrix, y_this_class)
-        model_to_tune.fit(text_train, y_this_class)
-        # predict(xx_dev, yy_dev, clf)
-        for i in model_to_tune.best_params_.keys():
-            if i not in tuned_parameters[0].keys():
-                tuned_parameters[0][i] = []
-            elif i in tuned_parameters[0][i]:
-                continue
-
-            tuned_parameters[0][i].append(model_to_tune.best_params_[i])
+                tuned_parameters[0][i].append(model_to_tune.best_params_[i])
 
     # clf = GridSearchCV((SVC()), tuned_parameters, cv=5, scoring='precision')
 

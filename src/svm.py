@@ -87,24 +87,24 @@ def tuning_parameter(matrix, polarity, multi=True):
                              'estimator__class_weight': [None, 'balanced']
                              }]
 
-        for a_class in set(polarity):
-            # y_this_class = (polarity == a_class)
-            y_this_class = (pol_train == a_class)
-            model_to_tune = GridSearchCV(OneVsRestClassifier(SVC(random_state=0)),
-                                         tuned_parameters, cv=5,
-                                         scoring=scoring, refit='precision_macro')
-            # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
-            # model_to_tune.fit(matrix, y_this_class)
-            model_to_tune.fit(text_train, y_this_class)
-            # print model_to_tune.best_params_
-
-            for i in model_to_tune.best_params_.keys():
-                if i not in tuned_parameters[0].keys():
-                    tuned_parameters[0][i] = []
-                elif i in tuned_parameters[0][i]:
-                    continue
-
-                tuned_parameters[0][i].append(model_to_tune.best_params_[i])
+        # for a_class in set(polarity):
+        #     # y_this_class = (polarity == a_class)
+        #     y_this_class = (pol_train == a_class)
+        #     model_to_tune = GridSearchCV(OneVsRestClassifier(SVC(random_state=0)),
+        #                                  tuned_parameters, cv=5,
+        #                                  scoring=scoring, refit='precision_macro')
+        #     # model_tuned = GridSearchCV(model_to_tune, param_grid=params, scoring='f1', n_jobs=2)
+        #     # model_to_tune.fit(matrix, y_this_class)
+        #     model_to_tune.fit(text_train, y_this_class)
+        #     # print model_to_tune.best_params_
+        #
+        #     for i in model_to_tune.best_params_.keys():
+        #         if i not in tuned_parameters[0].keys():
+        #             tuned_parameters[0][i] = []
+        #         elif i in tuned_parameters[0][i]:
+        #             continue
+        #
+        #         tuned_parameters[0][i].append(model_to_tune.best_params_[i])
 
         clf = GridSearchCV(OneVsRestClassifier(SVC(random_state=0)), tuned_parameters, cv=5)
         # if len(set(polarity)) > 2:

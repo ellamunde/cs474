@@ -67,13 +67,13 @@ def tuning_parameters(matrix, polarity, multi=True):
             # model_to_tune.fit(matrix, y_this_class)
             model_to_tune.fit(text_train, y_this_class)
 
-            for i in model_to_tune.best_params_.keys():
-                if i not in tuned_parameters[0].keys():
-                    tuned_parameters[0][i] = []
-                elif i in tuned_parameters[0][i]:
-                    continue
-
-                tuned_parameters[0][i].append(model_to_tune.best_params_[i])
+            # for i in model_to_tune.best_params_.keys():
+            #     if i not in tuned_parameters[0].keys():
+            #         tuned_parameters[0][i] = []
+            #     elif i in tuned_parameters[0][i]:
+            #         continue
+            #
+            #     tuned_parameters[0][i].append(model_to_tune.best_params_[i])
 
         clf = GridSearchCV((MultinomialNB()), tuned_parameters, cv=5)
 
