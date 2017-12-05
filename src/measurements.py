@@ -87,12 +87,12 @@ def f_pn_measurement(table):
             continue
 
         for index in range(len(table)):
-            print index
+            # print index
             point = 0
             polarity = table['POLARITY'][index]
             prediction = table['PREDICTION'][index]
-            print polarity
-            print prediction
+            # print polarity
+            # print prediction
 
             if polarity == prediction:
                 if polarity == "positive":

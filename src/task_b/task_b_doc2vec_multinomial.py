@@ -1,4 +1,4 @@
-import pre_task_bc_doc2vec as pre
+import src.pre_task_bc_doc2vec as pre
 
 dataset = 'B'
 input_from_file = pre.get_data('train', dataset)[:100]
@@ -16,7 +16,7 @@ print ">> dbow, svm-dbow"
 dbow_prediction = pre.polarity_test(model_dbow, dbow_svm_model, test_set)
 
 
-import measurements as m
+import src.measurements as m
 m.get_accuracy(dm_prediction)
 m.avg_recall(dm_prediction)
 m.get_accuracy(dbow_prediction)

@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 
 from measurements import predict
 from preprocessing import split_data
+import pandas_ml as pdml
 
 
 def default_log_res():
@@ -41,7 +42,7 @@ def tuning_parameters(matrix, polarity, multi=True):
     # Set the parameters by cross-validation
     # if isinstance(polarity[0], basestring):
     # print polarity.iloc[0]
-
+    pdml.Modal
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
 
     scoring = {#'auc': 'roc_auc',
@@ -138,6 +139,8 @@ def tuning_parameters(matrix, polarity, multi=True):
 def split_and_train(matrix, polarity, tuning=True, multi=True):
     # print matrix
     # print polarity
+    scaler = StandardScaler(with_mean=False)
+    # matrix = scaler.fit_transform(matrix)
     text_train, text_test, pol_train, pol_test = split_data(matrix, polarity, test_size=0.2)
     print "total polarity split train"
     print pol_train.value_counts()
@@ -147,8 +150,6 @@ def split_and_train(matrix, polarity, tuning=True, multi=True):
     # print type(text_train)
 
     # Standarize features
-    scaler = StandardScaler(with_mean=False)
-    text_train_std = scaler.fit_transform(text_train)
     # text_train_std = text_train
 
     # if tuning:
@@ -160,7 +161,7 @@ def split_and_train(matrix, polarity, tuning=True, multi=True):
     if tuning:
         model = tuning_parameters(text_train, pol_train, multi=multi)
     else:
-        model = default_log_res()
+        model = default_log_res().fit(text_train, pol_train)
     # print model.get_params(deep=True)
     predict(text_test, pol_test, model)
     return model

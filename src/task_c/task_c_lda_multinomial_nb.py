@@ -1,8 +1,8 @@
 import pre_task_bc_lda as pre
 
 dataset = 'C'
-input_from_file = pre.get_data('train', dataset)[:100]
-test_set = pre.get_data('test', dataset)[:100]
+input_from_file = pre.get_data('train', dataset)[:50]
+test_set = pre.get_data('test', dataset)[:50]
 
 lda_model, vectorizer, train_data, all_topics, topic_words_dist, map_topic_id = pre.get_model(input_from_file)
 polarity_model = pre.polarity_model(lda_model=lda_model, model='mnb', vectorizer=vectorizer,
