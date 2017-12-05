@@ -121,14 +121,26 @@ def polarity_model(lda_model, model, vectorizer, topic_words_dist, train_data, m
                                   topic_ids=map_topic_id
                                   )
     print len(train_data)
+    return classify(model,train_matrix,train_data['POLARITY'],multi=multi,tuning=tuning)
     # train_model = svm.split_and_train(svm_bow, sent_topic['POLARITY'])
+    # pol_model = None
+    # if model == 'svm':
+    #     pol_model = svm.split_and_train(train_matrix, train_data['POLARITY'], multi=multi)
+    # elif model == 'logres':
+    #     pol_model = logres.split_and_train(train_matrix, train_data['POLARITY'], tuning=tuning, multi=multi)
+    # elif model == 'mnb':
+    #     pol_model = mnb.split_and_train(train_matrix, train_data['POLARITY'], multi=multi)
+    #
+    # return pol_model
+
+def classify(model,train_matrix,polarity, multi, tuning):
     pol_model = None
     if model == 'svm':
-        pol_model = svm.split_and_train(train_matrix, train_data['POLARITY'], multi=multi)
+        pol_model = svm.split_and_train(train_matrix, polarity, multi=multi)
     elif model == 'logres':
-        pol_model = logres.split_and_train(train_matrix, train_data['POLARITY'], tuning=tuning, multi=multi)
+        pol_model = logres.split_and_train(train_matrix,polarity, tuning=tuning, multi=multi)
     elif model == 'mnb':
-        pol_model = mnb.split_and_train(train_matrix, train_data['POLARITY'], multi=multi)
+        pol_model = mnb.split_and_train(train_matrix, polarity, multi=multi)
 
     return pol_model
 
