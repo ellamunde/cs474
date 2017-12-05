@@ -1,16 +1,16 @@
-import features
-import preprocessing
-import measurements
+from src import features
+from src import preprocessing
+from src import measurements
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
-from preprocessing import split_data
+from src.preprocessing import split_data
 from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
-
+from src import pre_task_bc_lda as pre
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-def build_pipeline_mode(train, label,classifier):
+def extractFeatures(train):
     pipeline = Pipeline([
         # Extract the subject & body
 
@@ -36,28 +36,21 @@ def build_pipeline_mode(train, label,classifier):
                 'tfidf': 1.0,
                 'text_stats': 1.0,
             },
-        )),
-
-        # Use a SVC classifier on the combined features
-        ('clf',classifier )
-    ])
-    model=pipeline.fit(train,label)
+        ))])
+    model=pipeline.fit(train)
     return model
 
 
-def split_and_train(matrix, polarity,classifier):
-    text_train, text_test, pol_train, pol_test = split_data(matrix, polarity)
-    print "total polarity split train"
-    print pol_train.value_counts()
-    print "total polarity split test"
-    print pol_test.value_counts()
+def split_and_train(matrix, polarity,classifier='logres'):
+    pipeline_model = extractFeatures(matrix)
+    features = pipeline_model.transform(matrix)
+    model = pre.classify(classifier, features, polarity, True, True)
+    return model,pipeline_model
 
-    # --- build svm model >> for polarity
-
-    model = build_pipeline_mode(text_train, pol_train,classifier)
-
-    measurements.predict(text_test, pol_test, model)
-    return model
+def predict(model,pipeline_model,test_set,polarity):
+    features=pipeline_model.transform(test_set)
+    prediction = measurements.predict(features, polarity, model)
+    return prediction
 
 
 class TextStats(BaseEstimator, TransformerMixin):
