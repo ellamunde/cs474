@@ -9,17 +9,17 @@ import mord
 def default_log_res(type='AT'):
     model = mord.LogisticAT(alpha=1.)
     if type == 'SE':
-        model = mord.LogisticAT(alpha=1.)
+        model = mord.LogisticSE(alpha=1.)
     elif type == 'IT':
-        model = mord.LogisticAT(alpha=1.)
+        model = mord.LogisticIT(alpha=1.)
     return model
 
 def build_model(train_vec, train_label, type='AT'):
     model = mord.LogisticAT(alpha=1.)
     if type=='SE':
-        model = mord.LogisticAT(alpha=1.)
+        model = mord.LogisticSE(alpha=1.)
     elif type=='IT':
-        model = mord.LogisticAT(alpha=1.)
+        model = mord.LogisticIT(alpha=1.)
 
     model.fit(train_vec, train_label)
     return model
