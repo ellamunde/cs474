@@ -15,11 +15,11 @@ def calculate_polarity(tweet_tokens, pos_tokens, neg_tokens):
         t = re.sub(r'_', ' ', t)
         # print t
         if t in pos_tokens:
-            print ">> positive"
+            # print ">> positive"
             sentiment_score += 1
 
         if t in neg_tokens:
-            print ">> negative"
+            # print ">> negative"
             sentiment_score -= 1
 
     if sentiment_score > 0:
@@ -42,8 +42,8 @@ def test_sentiment(test, final_tokens_pos, final_tokens_neg):
 
         sentiment = calculate_polarity(tokens, final_tokens_pos, final_tokens_neg)
         sentiment_class.append(sentiment)
-        print "class: " + values['POLARITY']
-        print "prediction: " + sentiment
+        # print "class: " + values['POLARITY']
+        # print "prediction: " + sentiment
 
     test["PREDICTION"] = sentiment_class
     return test

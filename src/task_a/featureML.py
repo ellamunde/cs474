@@ -1,5 +1,5 @@
 from __future__ import division
-import preprocessing
+import src.preprocessing as preprocessing
 import numpy as np
 from sklearn.naive_bayes import MultinomialNB
 import pickle
@@ -10,6 +10,8 @@ import pickle
 
 #create X (feature vectors) Y (Target value)
 #fs=features
+
+
 def create_X_Y(data,fs):
     X = []
     Y = []
@@ -29,7 +31,6 @@ def create_X_Y(data,fs):
         Y.append(vals['POLARITY'])
 
     return np.array(X),np.array(Y)
-
 
 
 def train_clf(X,Y):

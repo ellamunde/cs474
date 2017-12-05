@@ -1,15 +1,16 @@
-import preprocessing
-import graph
+import src.preprocessing as preprocessing
+import src.graph as graph
 from sklearn.utils import shuffle
 from sklearn.naive_bayes import MultinomialNB
 import numpy as np
+
 train = "train"
 test = "test"
 pos = "positive"
 neg = "negative"
 neu = "neutral"
-train_a = preprocessing.get_data(train, "A")
-test_a=preprocessing.get_data(test, "A")
+train_a = preprocessing.open_preprocess_file(train, "A")
+test_a=preprocessing.open_preprocess_file(test, "A")
 
 #build class graphs on these sets
 pos_set=preprocessing.get_subset(train_a,'positive')[:500]
