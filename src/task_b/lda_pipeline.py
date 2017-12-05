@@ -12,18 +12,9 @@ from sklearn.pipeline import Pipeline
 import src.text_to_vector as text_to_vector
 import src.lda as lda
 import pandas as pd
-tuned_parameters = [{'tol': [1e-3, 1e-4],
-                         'solver': ['newton-cg', 'lbfgs', 'sag'],
-                         'C': [0.5, 1, 10, 100, 1000, 10000, 100000],
-                         'fit_intercept': [True, False],
-                         'class_weight': [None, 'balanced'],
-                         'multi_class': ['multinomial', 'ovr'],
-                         'warm_start': [False, True],
-                         'max_iter': [10, 100, 1000, 10000, 100000]
-                         }]
+from src import pre_task_bc_lda as pre
 
-def build_pipeline_mode(train, label,classifier):
-
+def extractFeatures(train):
 
     pipeline = Pipeline([
         # Extract the parameters for lda and feature
@@ -54,25 +45,23 @@ def build_pipeline_mode(train, label,classifier):
 
                 'text_stat': 1.0,
             },
-        )),
-        ('clf', GridSearchCV((LogisticRegression(random_state=0)), tuned_parameters, cv=5))])
-    model = pipeline.fit(train, label)
-    return model
+        ))])
+    p_model = pipeline.fit(train)
+
+    return p_model
 
 #accepts dataframe
-def split_and_train(matrix,polarity,classifier):
-    text_train, text_test, pol_train, pol_test = split_data(matrix, polarity)
-    print "total polarity split train"
-    print pol_train.value_counts()
-    print "total polarity split test"
-    print pol_test.value_counts()
-
+def split_and_train(matrix,polarity,classifier='logres'):
     # --- build svm model >> for polarity
+    pipeline_model=extractFeatures(matrix)
+    features = pipeline_model.transform(matrix)
+    model=pre.classify(classifier,features,polarity,True,False)
+    return model,pipeline_model
 
-    model = build_pipeline_mode(text_train, pol_train,classifier)
-
-    measurements.predict(text_test, pol_test, model)
-    return model
+def predict(model,pipeline_model,test_set,polarity):
+    features=pipeline_model.transform(test_set)
+    prediction = predict(features, polarity, model)
+    return prediction
 
 
 class TextStats(BaseEstimator, TransformerMixin):
