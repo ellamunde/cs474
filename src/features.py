@@ -39,23 +39,59 @@ def convert_to_dict(sample):
             'pos_postion':sample[19],'neg_postion':sample[20],'has_excl':sample[21]}
     return dict
 def neg_pos_position(tweet):
-    pos=[]
-    neg=[]
-    for i in range(0,len(tweet)):
-        t=tweet[i]
-        if t[2]=='pos':
-            pos.append(i+1)
-        elif t[2]=='neg':
-            neg.append(i)
-    if len(pos)>0:
-        pos=max(pos)
+     # return 1 if pos or neg appear in first part return 2 if in second part return 0 if in both return -1 if for no apperance
+    pos = []
+    neg = []
+    mid = len(tweet) / 2
+    # check if more than 2 tokens in a tweet
+    if len(tweet) < 3:
+        t1 = tweet[0]
+        t2 = tweet[1]
+        if t1[2] == t2[2] and (t1[2] == 'neg' or t1[2] == 'pos'):
+            if t1[2] == 'pos':
+                pos = 0
+            else:
+                neg = 0
+        elif t1[2] == 'pos':
+            pos = 1
+        elif t2[2] == 'pos':
+            pos = 2
+        else:
+            pos = -1
+            if t1[2] == 'neg':
+                neg = 1
+            elif t2[2] == 'neg':
+                neg = 2
+            else:
+                neg = -1
     else:
-        pos=0
-    if len(neg)>0:
-        neg=max(neg)
-    else:
-        neg=0
-    return pos,neg
+        for i in range(0, len(tweet)):
+            t = tweet[i]
+            if t[2] == 'pos':
+                if i < mid:
+                    pos.append(1)
+                else:
+                    pos.append(2)
+            elif t[2] == 'neg':
+                if i < mid:
+                    neg.append(1)
+                else:
+                    neg.append(2)
+        if len(pos) > 0:
+            if len([a for a in pos if a == 2]) > 0 and len([b for b in pos if b == 1]) > 0:
+                pos = 0
+            else:
+                pos = pos[0]
+        else:
+            pos = -1
+        if len(neg) > 0:
+            if len([c for c in neg if c == 2]) > 0 and len([d for d in neg if d == 1]) > 0:
+                neg = 0
+            else:
+                neg = neg[0]
+        else:
+            neg=-1
+    return pos, neg
 
 def check_tense(tweet):
     #in preprocessing replace all 'll with shall
